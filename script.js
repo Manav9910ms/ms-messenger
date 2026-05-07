@@ -4,8 +4,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
 import {
   getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -21,34 +21,23 @@ import {
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
+
 const db = getFirestore(app);
 
-window.signup = async function () {
+const provider = new GoogleAuthProvider();
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+window.googleLogin = async function () {
 
-  try{
-    await createUserWithEmailAndPassword(auth, email, password);
-    alert("Account Created!");
-  }
-  catch(error){
-    alert(error.message);
-  }
+  try {
 
-}
+    await signInWithPopup(auth, provider);
 
-window.login = async function () {
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try{
-    await signInWithEmailAndPassword(auth, email, password);
     alert("Login Success!");
-  }
-  catch(error){
+
+  } catch (error) {
+
     alert(error.message);
+
   }
 
 }
@@ -65,28 +54,34 @@ window.sendMessage = async function () {
 
   const user = auth.currentUser;
 
-  if(!user){
+  if (!user) {
+
     alert("Login First");
+
     return;
+
   }
 
   const message = document.getElementById("message").value;
 
-  if(message === ""){
-    return;
-  }
+  if (message === "") return;
 
   await addDoc(collection(db, "messages"), {
+
     text: message,
-    sender: user.email,
+    sender: user.displayName,
     time: Date.now()
+
   });
 
   document.getElementById("message").value = "";
 
 }
 
-const q = query(collection(db, "messages"), orderBy("time"));
+const q = query(
+  collection(db, "messages"),
+  orderBy("time")
+);
 
 onSnapshot(q, (snapshot) => {
 
