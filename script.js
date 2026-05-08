@@ -70,7 +70,8 @@ async () => {
       "status/" + currentUser.uid);
 
     await set(statusRef,{
-      online:false
+      online:false,
+      lastSeen:Date.now()
     });
 
   }
@@ -79,7 +80,7 @@ async () => {
 
 };
 
-/* AUTH STATE */
+/* AUTH */
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -93,8 +94,6 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("profileName").innerText =
       user.displayName;
 
-    /* SAVE USER */
-
     await setDoc(doc(db,"users",user.uid),{
 
       uid:user.uid,
@@ -107,18 +106,18 @@ onAuthStateChanged(auth, async (user) => {
 
     });
 
-    /* REALTIME ONLINE STATUS */
-
     const statusRef =
     ref(realtimeDb,
       "status/" + user.uid);
 
     await set(statusRef,{
-      online:true
+      online:true,
+      lastSeen:Date.now()
     });
 
     onDisconnect(statusRef).set({
-      online:false
+      online:false,
+      lastSeen:Date.now()
     });
 
     loadUsers();
@@ -126,6 +125,55 @@ onAuthStateChanged(auth, async (user) => {
   }
 
 });
+
+/* FORMAT LAST SEEN */
+
+function formatLastSeen(timestamp){
+
+  if(!timestamp) return "";
+
+  const date =
+  new Date(timestamp);
+
+  const now =
+  new Date();
+
+  const yesterday =
+  new Date();
+
+  yesterday.setDate(
+    yesterday.getDate() - 1
+  );
+
+  const time =
+  date.toLocaleTimeString([],{
+    hour:'2-digit',
+    minute:'2-digit'
+  });
+
+  const isToday =
+  date.toDateString() ===
+  now.toDateString();
+
+  const isYesterday =
+  date.toDateString() ===
+  yesterday.toDateString();
+
+  if(isToday){
+
+    return "Today " + time;
+
+  }
+
+  if(isYesterday){
+
+    return "Yesterday " + time;
+
+  }
+
+  return date.toLocaleDateString();
+
+}
 
 /* LOAD USERS */
 
@@ -139,7 +187,7 @@ async function loadUsers(){
   const snapshot =
   await getDocs(collection(db,"users"));
 
-  snapshot.forEach((docSnap) => {
+  snapshot.forEach((docSnap)=>{
 
     const data = docSnap.data();
 
@@ -171,8 +219,6 @@ async function loadUsers(){
 
       `;
 
-      /* REALTIME STATUS LISTENER */
-
       const statusRef =
       ref(realtimeDb,
         "status/" + data.uid);
@@ -186,12 +232,21 @@ async function loadUsers(){
 
         if(!statusDiv) return;
 
-        const status = snapshot.val();
+        const status =
+        snapshot.val();
 
         if(status && status.online){
 
           statusDiv.innerHTML =
           "🟢 Online";
+
+        }else if(status){
+
+          statusDiv.innerHTML =
+          "⚫ " +
+          formatLastSeen(
+            status.lastSeen
+          );
 
         }else{
 
@@ -202,12 +257,14 @@ async function loadUsers(){
 
       });
 
-      div.onclick = () => {
+      div.onclick = ()=>{
 
         selectedUser = data;
 
-        document.getElementById("chatHeader")
-        .innerText = data.name;
+        document.getElementById(
+          "chatHeader"
+        ).innerText =
+        data.name;
 
         loadMessages();
 
@@ -227,8 +284,11 @@ document.getElementById("searchInput")
 .addEventListener("input",()=>{
 
   const value =
-  document.getElementById("searchInput")
-  .value.toLowerCase();
+  document.getElementById(
+    "searchInput"
+  )
+  .value
+  .toLowerCase();
 
   const users =
   document.querySelectorAll(".user");
@@ -261,8 +321,9 @@ async ()=>{
   if(!selectedUser) return;
 
   const text =
-  document.getElementById("messageInput")
-  .value;
+  document.getElementById(
+    "messageInput"
+  ).value;
 
   if(text === "") return;
 
@@ -278,8 +339,9 @@ async ()=>{
 
   });
 
-  document.getElementById("messageInput")
-  .value = "";
+  document.getElementById(
+    "messageInput"
+  ).value = "";
 
 };
 
@@ -295,13 +357,16 @@ function loadMessages(){
   onSnapshot(q,(snapshot)=>{
 
     const chat =
-    document.getElementById("chatMessages");
+    document.getElementById(
+      "chatMessages"
+    );
 
     chat.innerHTML = "";
 
     snapshot.forEach((docSnap)=>{
 
-      const data = docSnap.data();
+      const data =
+      docSnap.data();
 
       const c1 =
       data.sender === currentUser.email &&
