@@ -262,9 +262,46 @@ async function loadUsers(){
         selectedUser = data;
 
         document.getElementById(
-          "chatHeader"
+          "chatUserName"
         ).innerText =
         data.name;
+
+        const headerStatus =
+        document.getElementById(
+          "chatUserStatus"
+        );
+
+        const statusRef =
+        ref(realtimeDb,
+          "status/" + data.uid
+        );
+
+        onValue(statusRef,(snapshot)=>{
+
+          const status =
+          snapshot.val();
+
+          if(status && status.online){
+
+            headerStatus.innerHTML =
+            "🟢 Online";
+
+          }else if(status){
+
+            headerStatus.innerHTML =
+            "⚫ Last seen " +
+            formatLastSeen(
+              status.lastSeen
+            );
+
+          }else{
+
+            headerStatus.innerHTML =
+            "⚫ Offline";
+
+          }
+
+        });
 
         loadMessages();
 
