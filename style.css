@@ -188,6 +188,17 @@ button:hover{
   outline:none;
 }
 
+.userInfo{
+  display:flex;
+  flex-direction:column;
+}
+
+.status{
+  font-size:12px;
+  margin-top:4px;
+  opacity:0.8;
+}
+
 #sendBtn{
   width:120px;
 }
