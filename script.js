@@ -36,9 +36,13 @@ let currentUser = null;
 
 let selectedUser = null;
 
+const sound =
+document.getElementById("messageSound");
+
 /* LOGIN */
 
-document.getElementById("loginBtn").onclick = async () => {
+document.getElementById("loginBtn").onclick =
+async () => {
 
   await signInWithPopup(auth, provider);
 
@@ -46,13 +50,14 @@ document.getElementById("loginBtn").onclick = async () => {
 
 /* LOGOUT */
 
-document.getElementById("logoutBtn").onclick = async () => {
+document.getElementById("logoutBtn").onclick =
+async () => {
 
   await signOut(auth);
 
 };
 
-/* AUTH STATE */
+/* AUTH */
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -65,8 +70,6 @@ onAuthStateChanged(auth, async (user) => {
 
     document.getElementById("profileName").innerText =
       user.displayName;
-
-    /* SAVE USER */
 
     await setDoc(doc(db, "users", user.uid), {
 
@@ -88,11 +91,13 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadUsers(){
 
-  const usersList = document.getElementById("usersList");
+  const usersList =
+  document.getElementById("usersList");
 
   usersList.innerHTML = "";
 
-  const snapshot = await getDocs(collection(db, "users"));
+  const snapshot =
+  await getDocs(collection(db, "users"));
 
   snapshot.forEach((docSnap) => {
 
@@ -104,14 +109,17 @@ async function loadUsers(){
 
       div.className = "user";
 
-      div.innerText = data.name;
+      div.innerHTML = `
+        <img src="${data.photo}">
+        <div>${data.name}</div>
+      `;
 
       div.onclick = () => {
 
         selectedUser = data;
 
-        document.getElementById("chatHeader").innerText =
-          data.name;
+        document.getElementById("chatHeader")
+        .innerText = data.name;
 
         loadMessages();
 
@@ -125,6 +133,35 @@ async function loadUsers(){
 
 }
 
+/* SEARCH USERS */
+
+document.getElementById("searchInput")
+.addEventListener("input", () => {
+
+  const value =
+  document.getElementById("searchInput")
+  .value.toLowerCase();
+
+  const users =
+  document.querySelectorAll(".user");
+
+  users.forEach((user) => {
+
+    if(user.innerText.toLowerCase()
+      .includes(value)){
+
+      user.style.display = "flex";
+
+    }else{
+
+      user.style.display = "none";
+
+    }
+
+  });
+
+});
+
 /* SEND MESSAGE */
 
 document.getElementById("sendBtn").onclick =
@@ -133,7 +170,7 @@ async () => {
   if(!selectedUser) return;
 
   const text =
-    document.getElementById("messageInput").value;
+  document.getElementById("messageInput").value;
 
   if(text === "") return;
 
@@ -149,7 +186,8 @@ async () => {
 
   });
 
-  document.getElementById("messageInput").value = "";
+  document.getElementById("messageInput")
+  .value = "";
 
 };
 
@@ -165,7 +203,7 @@ function loadMessages(){
   onSnapshot(q, (snapshot) => {
 
     const chat =
-      document.getElementById("chatMessages");
+    document.getElementById("chatMessages");
 
     chat.innerHTML = "";
 
@@ -173,30 +211,52 @@ function loadMessages(){
 
       const data = docSnap.data();
 
-      const condition1 =
-        data.sender === currentUser.email &&
-        data.receiver === selectedUser.email;
+      const c1 =
+      data.sender === currentUser.email &&
+      data.receiver === selectedUser.email;
 
-      const condition2 =
-        data.sender === selectedUser.email &&
-        data.receiver === currentUser.email;
+      const c2 =
+      data.sender === selectedUser.email &&
+      data.receiver === currentUser.email;
 
-      if(condition1 || condition2){
+      if(c1 || c2){
 
-        const div = document.createElement("div");
+        if(data.sender !== currentUser.email){
+
+          sound.play();
+
+        }
+
+        const div =
+        document.createElement("div");
 
         div.className =
-          "message " +
-          (data.sender === currentUser.email
-            ? "me"
-            : "other");
+        "message " +
+        (data.sender === currentUser.email
+          ? "me"
+          : "other");
+
+        const date =
+        new Date(data.time);
+
+        const time =
+        date.toLocaleTimeString([],{
+          hour:'2-digit',
+          minute:'2-digit'
+        });
 
         div.innerHTML = `
           <div class="sender">
             ${data.sender}
           </div>
 
-          ${data.text}
+          <div>
+            ${data.text}
+          </div>
+
+          <div class="time">
+            ${time}
+          </div>
         `;
 
         chat.appendChild(div);
@@ -205,7 +265,8 @@ function loadMessages(){
 
     });
 
-    chat.scrollTop = chat.scrollHeight;
+    chat.scrollTop =
+    chat.scrollHeight;
 
   });
 
