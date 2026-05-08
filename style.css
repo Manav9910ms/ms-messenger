@@ -20,7 +20,7 @@ body{
 /* SIDEBAR */
 
 .sidebar{
-  width:320px;
+  width:350px;
   background:#0d1320;
   border-right:1px solid #1f2a44;
   display:flex;
@@ -117,6 +117,17 @@ button:hover{
   border-radius:50%;
 }
 
+.userInfo{
+  display:flex;
+  flex-direction:column;
+}
+
+.status{
+  font-size:12px;
+  margin-top:4px;
+  opacity:0.8;
+}
+
 /* CHAT AREA */
 
 .chatArea{
@@ -129,8 +140,17 @@ button:hover{
   padding:20px;
   background:#0d1320;
   border-bottom:1px solid #1f2a44;
-  font-size:20px;
+}
+
+#chatUserName{
+  font-size:22px;
   color:#00c3ff;
+}
+
+#chatUserStatus{
+  margin-top:5px;
+  font-size:13px;
+  opacity:0.8;
 }
 
 #chatMessages{
@@ -186,17 +206,6 @@ button:hover{
   background:#18233a;
   color:white;
   outline:none;
-}
-
-.userInfo{
-  display:flex;
-  flex-direction:column;
-}
-
-.status{
-  font-size:12px;
-  margin-top:4px;
-  opacity:0.8;
 }
 
 #sendBtn{
