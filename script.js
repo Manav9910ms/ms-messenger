@@ -1,18 +1,24 @@
 import { firebaseConfig } from "./firebase-config.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  signOut
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   getFirestore,
   collection,
   addDoc,
+  getDocs,
+  setDoc,
+  doc,
   query,
   orderBy,
   onSnapshot
@@ -26,80 +32,181 @@ const db = getFirestore(app);
 
 const provider = new GoogleAuthProvider();
 
-window.googleLogin = async function () {
+let currentUser = null;
 
-  try {
+let selectedUser = null;
 
-    await signInWithPopup(auth, provider);
+/* LOGIN */
 
-    alert("Login Success!");
+document.getElementById("loginBtn").onclick = async () => {
 
-  } catch (error) {
+  await signInWithPopup(auth, provider);
 
-    alert(error.message);
+};
 
-  }
+/* LOGOUT */
 
-}
-
-window.logout = async function () {
+document.getElementById("logoutBtn").onclick = async () => {
 
   await signOut(auth);
 
-  alert("Logged Out");
+};
 
-}
+/* AUTH STATE */
 
-window.sendMessage = async function () {
+onAuthStateChanged(auth, async (user) => {
 
-  const user = auth.currentUser;
+  if(user){
 
-  if (!user) {
+    currentUser = user;
 
-    alert("Login First");
+    document.getElementById("profilePic").src =
+      user.photoURL;
 
-    return;
+    document.getElementById("profileName").innerText =
+      user.displayName;
+
+    /* SAVE USER */
+
+    await setDoc(doc(db, "users", user.uid), {
+
+      name: user.displayName,
+
+      email: user.email,
+
+      photo: user.photoURL
+
+    });
+
+    loadUsers();
 
   }
 
-  const message = document.getElementById("message").value;
+});
 
-  if (message === "") return;
+/* LOAD USERS */
+
+async function loadUsers(){
+
+  const usersList = document.getElementById("usersList");
+
+  usersList.innerHTML = "";
+
+  const snapshot = await getDocs(collection(db, "users"));
+
+  snapshot.forEach((docSnap) => {
+
+    const data = docSnap.data();
+
+    if(data.email !== currentUser.email){
+
+      const div = document.createElement("div");
+
+      div.className = "user";
+
+      div.innerText = data.name;
+
+      div.onclick = () => {
+
+        selectedUser = data;
+
+        document.getElementById("chatHeader").innerText =
+          data.name;
+
+        loadMessages();
+
+      };
+
+      usersList.appendChild(div);
+
+    }
+
+  });
+
+}
+
+/* SEND MESSAGE */
+
+document.getElementById("sendBtn").onclick =
+async () => {
+
+  if(!selectedUser) return;
+
+  const text =
+    document.getElementById("messageInput").value;
+
+  if(text === "") return;
 
   await addDoc(collection(db, "messages"), {
 
-    text: message,
-    sender: user.displayName,
+    sender: currentUser.email,
+
+    receiver: selectedUser.email,
+
+    text: text,
+
     time: Date.now()
 
   });
 
-  document.getElementById("message").value = "";
+  document.getElementById("messageInput").value = "";
 
-}
+};
 
-const q = query(
-  collection(db, "messages"),
-  orderBy("time")
-);
+/* LOAD MESSAGES */
 
-onSnapshot(q, (snapshot) => {
+function loadMessages(){
 
-  const chat = document.getElementById("chat");
+  const q = query(
+    collection(db, "messages"),
+    orderBy("time")
+  );
 
-  chat.innerHTML = "";
+  onSnapshot(q, (snapshot) => {
 
-  snapshot.forEach((doc) => {
+    const chat =
+      document.getElementById("chatMessages");
 
-    const data = doc.data();
+    chat.innerHTML = "";
 
-    chat.innerHTML += `
-      <div class="message">
-        <b>${data.sender}</b><br>
-        ${data.text}
-      </div>
-    `;
+    snapshot.forEach((docSnap) => {
+
+      const data = docSnap.data();
+
+      const condition1 =
+        data.sender === currentUser.email &&
+        data.receiver === selectedUser.email;
+
+      const condition2 =
+        data.sender === selectedUser.email &&
+        data.receiver === currentUser.email;
+
+      if(condition1 || condition2){
+
+        const div = document.createElement("div");
+
+        div.className =
+          "message " +
+          (data.sender === currentUser.email
+            ? "me"
+            : "other");
+
+        div.innerHTML = `
+          <div class="sender">
+            ${data.sender}
+          </div>
+
+          ${data.text}
+        `;
+
+        chat.appendChild(div);
+
+      }
+
+    });
+
+    chat.scrollTop = chat.scrollHeight;
 
   });
 
-});
+}
