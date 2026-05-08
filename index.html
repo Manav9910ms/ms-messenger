@@ -1,36 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MS Messenger</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <div class="container">
+  <div class="app">
 
-    <h1>MS Messenger</h1>
+    <!-- SIDEBAR -->
 
-    <button onclick="googleLogin()">
-      Sign in with Google
-    </button>
+    <div class="sidebar">
 
-    <button onclick="logout()">
-      Logout
-    </button>
+      <div class="logo">
+        MS Messenger
+      </div>
 
-    <hr>
+      <div class="profile">
 
-    <div id="chat"></div>
+        <img id="profilePic">
 
-    <input type="text" id="message" placeholder="Type message">
+        <div id="profileName">
+          Guest
+        </div>
 
-    <button onclick="sendMessage()">
-      Send
-    </button>
+      </div>
+
+      <button id="loginBtn">
+        Sign In With Google
+      </button>
+
+      <button id="logoutBtn">
+        Logout
+      </button>
+
+      <div class="usersTitle">
+        USERS
+      </div>
+
+      <div id="usersList"></div>
+
+    </div>
+
+    <!-- CHAT AREA -->
+
+    <div class="chatArea">
+
+      <div id="chatHeader">
+        Select User
+      </div>
+
+      <div id="chatMessages"></div>
+
+      <div class="messageBox">
+
+        <input type="text"
+               id="messageInput"
+               placeholder="Type message...">
+
+        <button id="sendBtn">
+          Send
+        </button>
+
+      </div>
+
+    </div>
 
   </div>
 
   <script type="module" src="script.js"></script>
 
 </body>
+
 </html>
