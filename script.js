@@ -24,11 +24,21 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import {
+  getDatabase,
+  ref,
+  set,
+  onValue,
+  onDisconnect
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
 const db = getFirestore(app);
+
+const realtimeDb = getDatabase(app);
 
 const provider = new GoogleAuthProvider();
 
@@ -55,23 +65,13 @@ async () => {
 
   if(currentUser){
 
-    await setDoc(
-      doc(db, "users", currentUser.uid),
-      {
+    const statusRef =
+    ref(realtimeDb,
+      "status/" + currentUser.uid);
 
-        name: currentUser.displayName,
-
-        email: currentUser.email,
-
-        photo: currentUser.photoURL,
-
-        online: false,
-
-        lastSeen: Date.now()
-
-      }
-
-    );
+    await set(statusRef,{
+      online:false
+    });
 
   }
 
@@ -79,7 +79,7 @@ async () => {
 
 };
 
-/* AUTH */
+/* AUTH STATE */
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -93,18 +93,32 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("profileName").innerText =
       user.displayName;
 
-    await setDoc(doc(db, "users", user.uid), {
+    /* SAVE USER */
 
-      name: user.displayName,
+    await setDoc(doc(db,"users",user.uid),{
 
-      email: user.email,
+      uid:user.uid,
 
-      photo: user.photoURL,
+      name:user.displayName,
 
-      online: true,
+      email:user.email,
 
-      lastSeen: Date.now()
+      photo:user.photoURL
 
+    });
+
+    /* REALTIME ONLINE STATUS */
+
+    const statusRef =
+    ref(realtimeDb,
+      "status/" + user.uid);
+
+    await set(statusRef,{
+      online:true
+    });
+
+    onDisconnect(statusRef).set({
+      online:false
     });
 
     loadUsers();
@@ -123,7 +137,7 @@ async function loadUsers(){
   usersList.innerHTML = "";
 
   const snapshot =
-  await getDocs(collection(db, "users"));
+  await getDocs(collection(db,"users"));
 
   snapshot.forEach((docSnap) => {
 
@@ -131,7 +145,8 @@ async function loadUsers(){
 
     if(data.email !== currentUser.email){
 
-      const div = document.createElement("div");
+      const div =
+      document.createElement("div");
 
       div.className = "user";
 
@@ -145,19 +160,47 @@ async function loadUsers(){
             ${data.name}
           </div>
 
-          <div class="status">
+          <div class="status"
+               id="status-${data.uid}">
 
-            ${
-              data.online
-              ? "🟢 Online"
-              : "⚫ Offline"
-            }
+            ⚫ Offline
 
           </div>
 
         </div>
 
       `;
+
+      /* REALTIME STATUS LISTENER */
+
+      const statusRef =
+      ref(realtimeDb,
+        "status/" + data.uid);
+
+      onValue(statusRef,(snapshot)=>{
+
+        const statusDiv =
+        document.getElementById(
+          "status-" + data.uid
+        );
+
+        if(!statusDiv) return;
+
+        const status = snapshot.val();
+
+        if(status && status.online){
+
+          statusDiv.innerHTML =
+          "🟢 Online";
+
+        }else{
+
+          statusDiv.innerHTML =
+          "⚫ Offline";
+
+        }
+
+      });
 
       div.onclick = () => {
 
@@ -181,7 +224,7 @@ async function loadUsers(){
 /* SEARCH USERS */
 
 document.getElementById("searchInput")
-.addEventListener("input", () => {
+.addEventListener("input",()=>{
 
   const value =
   document.getElementById("searchInput")
@@ -190,10 +233,13 @@ document.getElementById("searchInput")
   const users =
   document.querySelectorAll(".user");
 
-  users.forEach((user) => {
+  users.forEach((user)=>{
 
-    if(user.innerText.toLowerCase()
-      .includes(value)){
+    if(
+      user.innerText
+      .toLowerCase()
+      .includes(value)
+    ){
 
       user.style.display = "flex";
 
@@ -210,24 +256,25 @@ document.getElementById("searchInput")
 /* SEND MESSAGE */
 
 document.getElementById("sendBtn").onclick =
-async () => {
+async ()=>{
 
   if(!selectedUser) return;
 
   const text =
-  document.getElementById("messageInput").value;
+  document.getElementById("messageInput")
+  .value;
 
   if(text === "") return;
 
-  await addDoc(collection(db, "messages"), {
+  await addDoc(collection(db,"messages"),{
 
-    sender: currentUser.email,
+    sender:currentUser.email,
 
-    receiver: selectedUser.email,
+    receiver:selectedUser.email,
 
-    text: text,
+    text:text,
 
-    time: Date.now()
+    time:Date.now()
 
   });
 
@@ -241,18 +288,18 @@ async () => {
 function loadMessages(){
 
   const q = query(
-    collection(db, "messages"),
+    collection(db,"messages"),
     orderBy("time")
   );
 
-  onSnapshot(q, (snapshot) => {
+  onSnapshot(q,(snapshot)=>{
 
     const chat =
     document.getElementById("chatMessages");
 
     chat.innerHTML = "";
 
-    snapshot.forEach((docSnap) => {
+    snapshot.forEach((docSnap)=>{
 
       const data = docSnap.data();
 
@@ -277,9 +324,11 @@ function loadMessages(){
 
         div.className =
         "message " +
-        (data.sender === currentUser.email
+        (
+          data.sender === currentUser.email
           ? "me"
-          : "other");
+          : "other"
+        );
 
         const date =
         new Date(data.time);
@@ -291,6 +340,7 @@ function loadMessages(){
         });
 
         div.innerHTML = `
+
           <div class="sender">
             ${data.sender}
           </div>
@@ -302,6 +352,7 @@ function loadMessages(){
           <div class="time">
             ${time}
           </div>
+
         `;
 
         chat.appendChild(div);
