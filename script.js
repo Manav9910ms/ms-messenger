@@ -53,6 +53,28 @@ async () => {
 document.getElementById("logoutBtn").onclick =
 async () => {
 
+  if(currentUser){
+
+    await setDoc(
+      doc(db, "users", currentUser.uid),
+      {
+
+        name: currentUser.displayName,
+
+        email: currentUser.email,
+
+        photo: currentUser.photoURL,
+
+        online: false,
+
+        lastSeen: Date.now()
+
+      }
+
+    );
+
+  }
+
   await signOut(auth);
 
 };
@@ -77,7 +99,11 @@ onAuthStateChanged(auth, async (user) => {
 
       email: user.email,
 
-      photo: user.photoURL
+      photo: user.photoURL,
+
+      online: true,
+
+      lastSeen: Date.now()
 
     });
 
@@ -110,8 +136,27 @@ async function loadUsers(){
       div.className = "user";
 
       div.innerHTML = `
+
         <img src="${data.photo}">
-        <div>${data.name}</div>
+
+        <div class="userInfo">
+
+          <div>
+            ${data.name}
+          </div>
+
+          <div class="status">
+
+            ${
+              data.online
+              ? "🟢 Online"
+              : "⚫ Offline"
+            }
+
+          </div>
+
+        </div>
+
       `;
 
       div.onclick = () => {
