@@ -218,3 +218,206 @@ button{
 #sendBtn{
   width:120px;
 }
+
+/* =========================
+   MOBILE RESPONSIVE
+========================= */
+
+@media (max-width: 768px){
+
+  body{
+    overflow:hidden;
+  }
+
+  .app{
+    flex-direction:column;
+    height:100vh;
+  }
+
+  /* SIDEBAR */
+
+  .sidebar{
+
+    width:100%;
+
+    height:42vh;
+
+    border-right:none;
+
+    border-bottom:1px solid #1f2a44;
+
+    padding:15px;
+
+  }
+
+  .logo{
+
+    font-size:24px;
+
+    margin-bottom:18px;
+
+  }
+
+  .profile img{
+
+    width:48px;
+
+    height:48px;
+
+  }
+
+  button{
+
+    padding:10px;
+
+    font-size:14px;
+
+  }
+
+  #searchInput{
+
+    padding:10px;
+
+    font-size:14px;
+
+  }
+
+  .user{
+
+    padding:10px;
+
+  }
+
+  .user img{
+
+    width:45px;
+
+    height:45px;
+
+  }
+
+  /* CHAT AREA */
+
+  .chatArea{
+
+    flex:1;
+
+    height:58vh;
+
+  }
+
+  #chatHeader{
+
+    padding:15px;
+
+  }
+
+  #chatUserName{
+
+    font-size:20px;
+
+  }
+
+  #chatUserStatus{
+
+    font-size:12px;
+
+  }
+
+  #chatMessages{
+
+    padding:12px;
+
+  }
+
+  /* MESSAGE */
+
+  .message{
+
+    max-width:85%;
+
+    padding:12px;
+
+    font-size:14px;
+
+  }
+
+  .sender{
+
+    font-size:11px;
+
+  }
+
+  .time{
+
+    font-size:10px;
+
+  }
+
+  /* MESSAGE BOX */
+
+  .messageBox{
+
+    padding:12px;
+
+    gap:8px;
+
+  }
+
+  #messageInput{
+
+    padding:12px;
+
+    font-size:14px;
+
+  }
+
+  #sendBtn{
+
+    width:90px;
+
+    font-size:14px;
+
+  }
+
+}
+
+/* EXTRA SMALL DEVICES */
+
+@media (max-width: 480px){
+
+  .sidebar{
+
+    height:40vh;
+
+    padding:12px;
+
+  }
+
+  .chatArea{
+
+    height:60vh;
+
+  }
+
+  .logo{
+
+    font-size:22px;
+
+  }
+
+  .message{
+
+    max-width:90%;
+
+    font-size:13px;
+
+  }
+
+  #sendBtn{
+
+    width:80px;
+
+  }
+
+}
