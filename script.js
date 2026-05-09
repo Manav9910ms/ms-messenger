@@ -33,13 +33,6 @@ import {
   onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
@@ -47,8 +40,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const realtimeDb = getDatabase(app);
-
-const storage = getStorage(app);
 
 const provider = new GoogleAuthProvider();
 
@@ -355,6 +346,8 @@ document.getElementById("searchInput")
 
 /* TYPING */
 
+let typingTimeout;
+
 document.getElementById("messageInput")
 .addEventListener("input",()=>{
 
@@ -370,11 +363,13 @@ document.getElementById("messageInput")
     name:currentUser.displayName
   });
 
-  setTimeout(()=>{
+  clearTimeout(typingTimeout);
+
+  typingTimeout = setTimeout(()=>{
 
     set(typingRef,null);
 
-  },1000);
+  },1500);
 
 });
 
@@ -399,7 +394,11 @@ function listenTyping(){
       "typingIndicator"
     );
 
-    if(data){
+    if(
+      data &&
+      selectedUser &&
+      data.name === selectedUser.name
+    ){
 
       typingIndicator.innerHTML =
       data.name + " is typing...";
@@ -413,61 +412,6 @@ function listenTyping(){
   });
 
 }
-
-/* IMAGE BUTTON */
-
-document.getElementById("imageBtn")
-.onclick = ()=>{
-
-  document.getElementById(
-    "imageInput"
-  ).click();
-
-};
-
-/* IMAGE SEND */
-
-document.getElementById("imageInput")
-.addEventListener("change",
-async(event)=>{
-
-  const file =
-  event.target.files[0];
-
-  if(!file || !selectedUser) return;
-
-  const imageRef =
-  storageRef(
-    storage,
-    "images/" + Date.now()
-  );
-
-  await uploadBytes(
-    imageRef,
-    file
-  );
-
-  const imageUrl =
-  await getDownloadURL(imageRef);
-
-  await addDoc(
-    collection(db,"messages"),
-    {
-
-      sender:currentUser.email,
-
-      receiver:selectedUser.email,
-
-      image:imageUrl,
-
-      time:Date.now(),
-
-      seen:false
-
-    }
-  );
-
-});
 
 /* SEND MESSAGE */
 
@@ -597,16 +541,8 @@ function loadMessages(){
           </div>
 
           <div>
-            ${data.text || ""}
+            ${data.text}
           </div>
-
-          ${
-            data.image
-            ? `
-            <img src="${data.image}">
-            `
-            : ""
-          }
 
           <div class="time">
 
