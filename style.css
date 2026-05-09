@@ -273,11 +273,11 @@ button:hover{
 
   border-radius:18px;
 
-  overflow-wrap:anywhere;
-
-  word-break:break-word;
-
   white-space:pre-wrap;
+
+  overflow:hidden;
+
+  word-break:break-all;
 
   display:flex;
 
