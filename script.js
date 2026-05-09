@@ -18,6 +18,7 @@ import {
   addDoc,
   getDocs,
   setDoc,
+  updateDoc,
   doc,
   query,
   orderBy,
@@ -32,6 +33,13 @@ import {
   onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
@@ -40,34 +48,33 @@ const db = getFirestore(app);
 
 const realtimeDb = getDatabase(app);
 
+const storage = getStorage(app);
+
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 
 let selectedUser = null;
 
-const sound =
-document.getElementById("messageSound");
-
 /* LOGIN */
 
 document.getElementById("loginBtn").onclick =
-async () => {
+async ()=>{
 
-  await signInWithPopup(auth, provider);
+  await signInWithPopup(auth,provider);
 
 };
 
 /* LOGOUT */
 
 document.getElementById("logoutBtn").onclick =
-async () => {
+async ()=>{
 
   if(currentUser){
 
     const statusRef =
     ref(realtimeDb,
-      "status/" + currentUser.uid);
+    "status/" + currentUser.uid);
 
     await set(statusRef,{
       online:false,
@@ -78,21 +85,28 @@ async () => {
 
   await signOut(auth);
 
+  alert("Logout Successfully");
+
+  location.reload();
+
 };
 
 /* AUTH */
 
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth,async(user)=>{
 
   if(user){
 
     currentUser = user;
 
     document.getElementById("profilePic").src =
-      user.photoURL;
+    user.photoURL;
 
     document.getElementById("profileName").innerText =
-      user.displayName;
+    user.displayName;
+
+    document.getElementById("loginBtn")
+    .style.display = "none";
 
     await setDoc(doc(db,"users",user.uid),{
 
@@ -108,7 +122,7 @@ onAuthStateChanged(auth, async (user) => {
 
     const statusRef =
     ref(realtimeDb,
-      "status/" + user.uid);
+    "status/" + user.uid);
 
     await set(statusRef,{
       online:true,
@@ -132,14 +146,11 @@ function formatLastSeen(timestamp){
 
   if(!timestamp) return "";
 
-  const date =
-  new Date(timestamp);
+  const date = new Date(timestamp);
 
-  const now =
-  new Date();
+  const now = new Date();
 
-  const yesterday =
-  new Date();
+  const yesterday = new Date();
 
   yesterday.setDate(
     yesterday.getDate() - 1
@@ -151,21 +162,13 @@ function formatLastSeen(timestamp){
     minute:'2-digit'
   });
 
-  const isToday =
-  date.toDateString() ===
-  now.toDateString();
-
-  const isYesterday =
-  date.toDateString() ===
-  yesterday.toDateString();
-
-  if(isToday){
+  if(date.toDateString() === now.toDateString()){
 
     return "Today " + time;
 
   }
 
-  if(isYesterday){
+  if(date.toDateString() === yesterday.toDateString()){
 
     return "Yesterday " + time;
 
@@ -204,15 +207,15 @@ async function loadUsers(){
 
         <div class="userInfo">
 
-          <div>
-            ${data.name}
+          <div>${data.name}</div>
+
+          <div class="userEmail">
+            ${data.email}
           </div>
 
           <div class="status"
                id="status-${data.uid}">
-
             ⚫ Offline
-
           </div>
 
         </div>
@@ -221,7 +224,7 @@ async function loadUsers(){
 
       const statusRef =
       ref(realtimeDb,
-        "status/" + data.uid);
+      "status/" + data.uid);
 
       onValue(statusRef,(snapshot)=>{
 
@@ -232,8 +235,7 @@ async function loadUsers(){
 
         if(!statusDiv) return;
 
-        const status =
-        snapshot.val();
+        const status = snapshot.val();
 
         if(status && status.online){
 
@@ -248,11 +250,6 @@ async function loadUsers(){
             status.lastSeen
           );
 
-        }else{
-
-          statusDiv.innerHTML =
-          "⚫ Offline";
-
         }
 
       });
@@ -263,23 +260,16 @@ async function loadUsers(){
 
         document.getElementById(
           "chatUserName"
-        ).innerText =
-        data.name;
+        ).innerText = data.name;
 
         const headerStatus =
         document.getElementById(
           "chatUserStatus"
         );
 
-        const statusRef =
-        ref(realtimeDb,
-          "status/" + data.uid
-        );
-
         onValue(statusRef,(snapshot)=>{
 
-          const status =
-          snapshot.val();
+          const status = snapshot.val();
 
           if(status && status.online){
 
@@ -293,11 +283,6 @@ async function loadUsers(){
             formatLastSeen(
               status.lastSeen
             );
-
-          }else{
-
-            headerStatus.innerHTML =
-            "⚫ Offline";
 
           }
 
@@ -315,36 +300,104 @@ async function loadUsers(){
 
 }
 
-/* SEARCH USERS */
+/* TYPING */
 
-document.getElementById("searchInput")
+document.getElementById("messageInput")
 .addEventListener("input",()=>{
 
-  const value =
-  document.getElementById(
-    "searchInput"
-  )
-  .value
-  .toLowerCase();
+  if(!selectedUser) return;
 
-  const users =
-  document.querySelectorAll(".user");
+  const typingRef =
+  ref(realtimeDb,
+  "typing/" + selectedUser.uid);
 
-  users.forEach((user)=>{
+  set(typingRef,{
+    name:currentUser.displayName
+  });
 
-    if(
-      user.innerText
-      .toLowerCase()
-      .includes(value)
-    ){
+  setTimeout(()=>{
 
-      user.style.display = "flex";
+    set(typingRef,null);
+
+  },1000);
+
+});
+
+/* LISTEN TYPING */
+
+function listenTyping(){
+
+  const typingRef =
+  ref(realtimeDb,
+  "typing/" + currentUser.uid);
+
+  onValue(typingRef,(snapshot)=>{
+
+    const data = snapshot.val();
+
+    const typingIndicator =
+    document.getElementById(
+      "typingIndicator"
+    );
+
+    if(data){
+
+      typingIndicator.innerHTML =
+      data.name + " is typing...";
 
     }else{
 
-      user.style.display = "none";
+      typingIndicator.innerHTML = "";
 
     }
+
+  });
+
+}
+
+listenTyping();
+
+/* SEND IMAGE */
+
+document.getElementById("imageBtn")
+.onclick = ()=>{
+
+  document.getElementById(
+    "imageInput"
+  ).click();
+
+};
+
+document.getElementById("imageInput")
+.addEventListener("change",
+async(event)=>{
+
+  const file = event.target.files[0];
+
+  if(!file || !selectedUser) return;
+
+  const imageRef =
+  storageRef(
+    storage,
+    "images/" + Date.now()
+  );
+
+  await uploadBytes(imageRef,file);
+
+  const imageUrl =
+  await getDownloadURL(imageRef);
+
+  await addDoc(collection(db,"messages"),{
+
+    sender:currentUser.email,
+
+    receiver:selectedUser.email,
+
+    image:imageUrl,
+
+    time:Date.now(),
+
+    seen:false
 
   });
 
@@ -353,7 +406,7 @@ document.getElementById("searchInput")
 /* SEND MESSAGE */
 
 document.getElementById("sendBtn").onclick =
-async ()=>{
+async()=>{
 
   if(!selectedUser) return;
 
@@ -372,7 +425,9 @@ async ()=>{
 
     text:text,
 
-    time:Date.now()
+    time:Date.now(),
+
+    seen:false
 
   });
 
@@ -391,7 +446,7 @@ function loadMessages(){
     orderBy("time")
   );
 
-  onSnapshot(q,(snapshot)=>{
+  onSnapshot(q,async(snapshot)=>{
 
     const chat =
     document.getElementById(
@@ -400,10 +455,9 @@ function loadMessages(){
 
     chat.innerHTML = "";
 
-    snapshot.forEach((docSnap)=>{
+    snapshot.forEach(async(docSnap)=>{
 
-      const data =
-      docSnap.data();
+      const data = docSnap.data();
 
       const c1 =
       data.sender === currentUser.email &&
@@ -415,9 +469,17 @@ function loadMessages(){
 
       if(c1 || c2){
 
-        if(data.sender !== currentUser.email){
+        if(
+          data.receiver === currentUser.email
+          && !data.seen
+        ){
 
-          sound.play();
+          await updateDoc(
+            doc(db,"messages",docSnap.id),
+            {
+              seen:true
+            }
+          );
 
         }
 
@@ -441,6 +503,17 @@ function loadMessages(){
           minute:'2-digit'
         });
 
+        let tick = "";
+
+        if(data.sender === currentUser.email){
+
+          tick =
+          data.seen
+          ? "✓✓"
+          : "✓";
+
+        }
+
         div.innerHTML = `
 
           <div class="sender">
@@ -448,11 +521,23 @@ function loadMessages(){
           </div>
 
           <div>
-            ${data.text}
+            ${data.text || ""}
           </div>
 
+          ${
+            data.image
+            ? `<img src="${data.image}">`
+            : ""
+          }
+
           <div class="time">
+
             ${time}
+
+            <span class="tick">
+              ${tick}
+            </span>
+
           </div>
 
         `;
