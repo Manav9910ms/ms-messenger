@@ -80,6 +80,18 @@ async function loadUsers(){
 
       div.onclick = ()=>{
 
+        if(window.innerWidth <= 768){
+
+  document
+  .getElementById("sidebar")
+  .classList.add("hide");
+
+  document
+  .getElementById("chatArea")
+  .classList.add("active");
+
+}
+
         setSelectedUser(data);
 
         document.getElementById(
