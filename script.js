@@ -73,8 +73,10 @@ async ()=>{
   if(currentUser){
 
     const statusRef =
-    ref(realtimeDb,
-    "status/" + currentUser.uid);
+    ref(
+      realtimeDb,
+      "status/" + currentUser.uid
+    );
 
     await set(statusRef,{
       online:false,
@@ -121,8 +123,10 @@ onAuthStateChanged(auth,async(user)=>{
     });
 
     const statusRef =
-    ref(realtimeDb,
-    "status/" + user.uid);
+    ref(
+      realtimeDb,
+      "status/" + user.uid
+    );
 
     await set(statusRef,{
       online:true,
@@ -135,6 +139,8 @@ onAuthStateChanged(auth,async(user)=>{
     });
 
     loadUsers();
+
+    listenTyping();
 
   }
 
@@ -162,13 +168,19 @@ function formatLastSeen(timestamp){
     minute:'2-digit'
   });
 
-  if(date.toDateString() === now.toDateString()){
+  if(
+    date.toDateString() ===
+    now.toDateString()
+  ){
 
     return "Today " + time;
 
   }
 
-  if(date.toDateString() === yesterday.toDateString()){
+  if(
+    date.toDateString() ===
+    yesterday.toDateString()
+  ){
 
     return "Yesterday " + time;
 
@@ -215,7 +227,9 @@ async function loadUsers(){
 
           <div class="status"
                id="status-${data.uid}">
+
             ⚫ Offline
+
           </div>
 
         </div>
@@ -223,8 +237,10 @@ async function loadUsers(){
       `;
 
       const statusRef =
-      ref(realtimeDb,
-      "status/" + data.uid);
+      ref(
+        realtimeDb,
+        "status/" + data.uid
+      );
 
       onValue(statusRef,(snapshot)=>{
 
@@ -260,7 +276,8 @@ async function loadUsers(){
 
         document.getElementById(
           "chatUserName"
-        ).innerText = data.name;
+        ).innerText =
+        data.name;
 
         const headerStatus =
         document.getElementById(
@@ -269,7 +286,8 @@ async function loadUsers(){
 
         onValue(statusRef,(snapshot)=>{
 
-          const status = snapshot.val();
+          const status =
+          snapshot.val();
 
           if(status && status.online){
 
@@ -300,6 +318,41 @@ async function loadUsers(){
 
 }
 
+/* SEARCH USERS */
+
+document.getElementById("searchInput")
+.addEventListener("input",()=>{
+
+  const value =
+  document.getElementById(
+    "searchInput"
+  )
+  .value
+  .toLowerCase();
+
+  const users =
+  document.querySelectorAll(".user");
+
+  users.forEach((user)=>{
+
+    if(
+      user.innerText
+      .toLowerCase()
+      .includes(value)
+    ){
+
+      user.style.display = "flex";
+
+    }else{
+
+      user.style.display = "none";
+
+    }
+
+  });
+
+});
+
 /* TYPING */
 
 document.getElementById("messageInput")
@@ -308,8 +361,10 @@ document.getElementById("messageInput")
   if(!selectedUser) return;
 
   const typingRef =
-  ref(realtimeDb,
-  "typing/" + selectedUser.uid);
+  ref(
+    realtimeDb,
+    "typing/" + selectedUser.uid
+  );
 
   set(typingRef,{
     name:currentUser.displayName
@@ -327,9 +382,13 @@ document.getElementById("messageInput")
 
 function listenTyping(){
 
+  if(!currentUser) return;
+
   const typingRef =
-  ref(realtimeDb,
-  "typing/" + currentUser.uid);
+  ref(
+    realtimeDb,
+    "typing/" + currentUser.uid
+  );
 
   onValue(typingRef,(snapshot)=>{
 
@@ -355,9 +414,7 @@ function listenTyping(){
 
 }
 
-listenTyping();
-
-/* SEND IMAGE */
+/* IMAGE BUTTON */
 
 document.getElementById("imageBtn")
 .onclick = ()=>{
@@ -368,11 +425,14 @@ document.getElementById("imageBtn")
 
 };
 
+/* IMAGE SEND */
+
 document.getElementById("imageInput")
 .addEventListener("change",
 async(event)=>{
 
-  const file = event.target.files[0];
+  const file =
+  event.target.files[0];
 
   if(!file || !selectedUser) return;
 
@@ -382,31 +442,37 @@ async(event)=>{
     "images/" + Date.now()
   );
 
-  await uploadBytes(imageRef,file);
+  await uploadBytes(
+    imageRef,
+    file
+  );
 
   const imageUrl =
   await getDownloadURL(imageRef);
 
-  await addDoc(collection(db,"messages"),{
+  await addDoc(
+    collection(db,"messages"),
+    {
 
-    sender:currentUser.email,
+      sender:currentUser.email,
 
-    receiver:selectedUser.email,
+      receiver:selectedUser.email,
 
-    image:imageUrl,
+      image:imageUrl,
 
-    time:Date.now(),
+      time:Date.now(),
 
-    seen:false
+      seen:false
 
-  });
+    }
+  );
 
 });
 
 /* SEND MESSAGE */
 
 document.getElementById("sendBtn").onclick =
-async()=>{
+async ()=>{
 
   if(!selectedUser) return;
 
@@ -417,19 +483,22 @@ async()=>{
 
   if(text === "") return;
 
-  await addDoc(collection(db,"messages"),{
+  await addDoc(
+    collection(db,"messages"),
+    {
 
-    sender:currentUser.email,
+      sender:currentUser.email,
 
-    receiver:selectedUser.email,
+      receiver:selectedUser.email,
 
-    text:text,
+      text:text,
 
-    time:Date.now(),
+      time:Date.now(),
 
-    seen:false
+      seen:false
 
-  });
+    }
+  );
 
   document.getElementById(
     "messageInput"
@@ -446,7 +515,7 @@ function loadMessages(){
     orderBy("time")
   );
 
-  onSnapshot(q,async(snapshot)=>{
+  onSnapshot(q,(snapshot)=>{
 
     const chat =
     document.getElementById(
@@ -455,9 +524,10 @@ function loadMessages(){
 
     chat.innerHTML = "";
 
-    snapshot.forEach(async(docSnap)=>{
+    snapshot.forEach((docSnap)=>{
 
-      const data = docSnap.data();
+      const data =
+      docSnap.data();
 
       const c1 =
       data.sender === currentUser.email &&
@@ -474,8 +544,12 @@ function loadMessages(){
           && !data.seen
         ){
 
-          await updateDoc(
-            doc(db,"messages",docSnap.id),
+          updateDoc(
+            doc(
+              db,
+              "messages",
+              docSnap.id
+            ),
             {
               seen:true
             }
@@ -505,7 +579,9 @@ function loadMessages(){
 
         let tick = "";
 
-        if(data.sender === currentUser.email){
+        if(
+          data.sender === currentUser.email
+        ){
 
           tick =
           data.seen
@@ -526,7 +602,9 @@ function loadMessages(){
 
           ${
             data.image
-            ? `<img src="${data.image}">`
+            ? `
+            <img src="${data.image}">
+            `
             : ""
           }
 
