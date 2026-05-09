@@ -360,6 +360,7 @@ document.getElementById("messageInput")
   );
 
   set(typingRef,{
+    uid:currentUser.uid,
     name:currentUser.displayName
   });
 
@@ -397,7 +398,7 @@ function listenTyping(){
     if(
       data &&
       selectedUser &&
-      data.name === selectedUser.name
+      data.uid === selectedUser.uid
     ){
 
       typingIndicator.innerHTML =
