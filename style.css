@@ -8,14 +8,16 @@
 body{
   background:#070b14;
   color:white;
-  height:100vh;
+  height:100dvh;
   overflow:hidden;
 }
 
 .app{
   display:flex;
-  height:100vh;
+  height:100dvh;
 }
+
+/* SIDEBAR */
 
 .sidebar{
   width:350px;
@@ -118,16 +120,20 @@ button{
   opacity:0.8;
 }
 
+/* CHAT AREA */
+
 .chatArea{
   flex:1;
   display:flex;
   flex-direction:column;
+  min-height:0;
 }
 
 #chatHeader{
   padding:20px;
   background:#0d1320;
   border-bottom:1px solid #1f2a44;
+  flex-shrink:0;
 }
 
 #chatUserName{
@@ -142,18 +148,14 @@ button{
 }
 
 #chatMessages{
-
   flex:1;
-
   padding:20px;
-
   overflow-y:auto;
-
   overflow-x:hidden;
-
-  padding-bottom:20px;
-
+  min-height:0;
 }
+
+/* MESSAGE */
 
 .message{
   max-width:340px;
@@ -161,6 +163,8 @@ button{
   margin-bottom:15px;
   border-radius:18px;
   word-wrap:break-word;
+  overflow:hidden;
+  word-break:break-word;
 }
 
 .me{
@@ -202,20 +206,15 @@ button{
   opacity:0.7;
 }
 
+/* MESSAGE BOX */
+
 .messageBox{
-
   display:flex;
-
   gap:10px;
-
   padding:12px;
-
   background:#0d1320;
-
   border-top:1px solid #1f2a44;
-
   flex-shrink:0;
-
 }
 
 #messageInput{
@@ -236,238 +235,125 @@ button{
   width:120px;
 }
 
-/* =========================
-   MOBILE RESPONSIVE
-========================= */
-
-@media (max-width: 768px){
-
-  body{
-    overflow:hidden;
-  }
-
-  .app{
-    flex-direction:column;
-    height:100vh;
-  }
-
-  /* SIDEBAR */
-
-  .sidebar{
-
-    width:100%;
-
-    height:42vh;
-
-    border-right:none;
-
-    border-bottom:1px solid #1f2a44;
-
-    padding:15px;
-
-  }
-
-  .logo{
-
-    font-size:24px;
-
-    margin-bottom:18px;
-
-  }
-
-  .profile img{
-
-    width:48px;
-
-    height:48px;
-
-  }
-
-  button{
-
-    padding:10px;
-
-    font-size:14px;
-
-  }
-
-  #searchInput{
-
-    padding:10px;
-
-    font-size:14px;
-
-  }
-
-  .user{
-
-    padding:10px;
-
-  }
-
-  .user img{
-
-    width:45px;
-
-    height:45px;
-
-  }
-
-  /* CHAT AREA */
-
-  .chatArea{
-
-    flex:1;
-
-    height:58vh;
-
-  }
-
-  #chatHeader{
-
-    padding:15px;
-
-  }
-
-  #chatUserName{
-
-    font-size:20px;
-
-  }
-
-  #chatUserStatus{
-
-    font-size:12px;
-
-  }
-
-  #chatMessages{
-
-    padding:12px;
-
-  }
-
-  /* MESSAGE */
-
-  .message{
-
-    max-width:85%;
-
-    padding:12px;
-
-    font-size:14px;
-
-  }
-
-  .sender{
-
-    font-size:11px;
-
-  }
-
-  .time{
-
-    font-size:10px;
-
-  }
-
-  /* MESSAGE BOX */
-
-  .messageBox{
-
-    padding:12px;
-
-    gap:8px;
-
-  }
-
-  #messageInput{
-
-    padding:12px;
-
-    font-size:14px;
-
-  }
-
-  #sendBtn{
-
-    width:90px;
-
-    font-size:14px;
-
-  }
-
-}
-
-/* MOBILE MESSENGER MODE */
+/* BACK BUTTON */
 
 #backBtn{
   display:none;
 }
 
+/* MOBILE */
+
 @media(max-width:768px){
 
-  .sidebar{
-
-    width:100%;
-
-    height:100vh;
-
-    border-right:none;
-
+  .app{
+    height:100dvh;
+    overflow:hidden;
   }
 
-  .chatArea{
-
-  display:none;
-
-  width:100%;
-
-  height:calc(100dvh - 0px);
-
-  overflow:hidden;
-
-  flex-direction:column;
-
-}
-
-
-  .messageBox{
-
-  position:sticky;
-
-  bottom:0;
-
-  z-index:10;
-
-}
-
-  .chatArea.active{
-
-    display:flex;
-
+  .sidebar{
+    width:100%;
+    height:100dvh;
+    border-right:none;
+    padding:15px;
   }
 
   .sidebar.hide{
-
     display:none;
+  }
 
+  .chatArea{
+    display:none;
+    width:100%;
+    height:100dvh;
+    flex-direction:column;
+  }
+
+  .chatArea.active{
+    display:flex;
   }
 
   #backBtn{
-
     display:block;
-
     width:50px;
-
     margin-bottom:10px;
+  }
 
+  .logo{
+    font-size:24px;
+    margin-bottom:18px;
+  }
+
+  .profile img{
+    width:48px;
+    height:48px;
+  }
+
+  button{
+    padding:10px;
+    font-size:14px;
+  }
+
+  #searchInput{
+    padding:10px;
+    font-size:14px;
+  }
+
+  .user{
+    padding:10px;
+  }
+
+  .user img{
+    width:45px;
+    height:45px;
+  }
+
+  #chatHeader{
+    padding:15px;
+  }
+
+  #chatUserName{
+    font-size:20px;
+  }
+
+  #chatUserStatus{
+    font-size:12px;
+  }
+
+  #chatMessages{
+    flex:1;
+    padding:12px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    min-height:0;
   }
 
   .message{
-
     max-width:85%;
+    padding:12px;
+    font-size:14px;
+  }
 
+  .sender{
+    font-size:11px;
+  }
+
+  .time{
+    font-size:10px;
+  }
+
+  .messageBox{
+    padding:10px;
+    gap:8px;
+  }
+
+  #messageInput{
+    padding:12px;
+    font-size:14px;
+  }
+
+  #sendBtn{
+    width:90px;
+    font-size:14px;
   }
 
 }
