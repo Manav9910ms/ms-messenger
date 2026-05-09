@@ -144,7 +144,7 @@ button{
 #chatMessages{
   flex:1;
   padding:20px;
-  padding-bottom:100px;
+  padding-bottom:160px;
   overflow-y:auto;
 }
 
@@ -200,6 +200,9 @@ button{
   gap:10px;
   padding:20px;
   background:#0d1320;
+  position:sticky;
+  bottom:0;
+  z-index:100;
 }
 
 #messageInput{
