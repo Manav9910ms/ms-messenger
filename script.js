@@ -47,6 +47,8 @@ let currentUser = null;
 
 let selectedUser = null;
 
+let typingListener = null;
+
 /* LOGIN */
 
 document.getElementById("loginBtn").onclick =
@@ -130,8 +132,6 @@ onAuthStateChanged(auth,async(user)=>{
     });
 
     loadUsers();
-
-    listenTyping();
 
   }
 
@@ -297,6 +297,8 @@ async function loadUsers(){
 
         });
 
+        listenTyping();
+
         loadMessages();
 
       };
@@ -344,7 +346,7 @@ document.getElementById("searchInput")
 
 });
 
-/* TYPING */
+/* TYPING SEND */
 
 let typingTimeout;
 
@@ -356,11 +358,13 @@ document.getElementById("messageInput")
   const typingRef =
   ref(
     realtimeDb,
-    "typing/" + selectedUser.uid
+    "typing/" +
+    currentUser.uid +
+    "_" +
+    selectedUser.uid
   );
 
   set(typingRef,{
-    uid:currentUser.uid,
     name:currentUser.displayName
   });
 
@@ -378,12 +382,15 @@ document.getElementById("messageInput")
 
 function listenTyping(){
 
-  if(!currentUser) return;
+  if(!currentUser || !selectedUser) return;
 
   const typingRef =
   ref(
     realtimeDb,
-    "typing/" + currentUser.uid
+    "typing/" +
+    selectedUser.uid +
+    "_" +
+    currentUser.uid
   );
 
   onValue(typingRef,(snapshot)=>{
@@ -395,11 +402,7 @@ function listenTyping(){
       "typingIndicator"
     );
 
-    if(
-      data &&
-      selectedUser &&
-      data.uid === selectedUser.uid
-    ){
+    if(data){
 
       typingIndicator.innerHTML =
       data.name + " is typing...";
