@@ -17,8 +17,6 @@ body{
   height:100vh;
 }
 
-/* SIDEBAR */
-
 .sidebar{
   width:350px;
   background:#0d1320;
@@ -65,12 +63,6 @@ button{
   cursor:pointer;
   margin-bottom:12px;
   font-weight:bold;
-  transition:0.3s;
-}
-
-button:hover{
-  transform:scale(1.03);
-  box-shadow:0 0 20px #00bfff;
 }
 
 #searchInput{
@@ -86,7 +78,6 @@ button:hover{
 .usersTitle{
   margin-bottom:10px;
   color:#00c3ff;
-  font-size:14px;
 }
 
 #usersList{
@@ -99,21 +90,15 @@ button:hover{
   padding:12px;
   border-radius:15px;
   margin-bottom:10px;
-  cursor:pointer;
-  transition:0.3s;
   display:flex;
   align-items:center;
   gap:12px;
-}
-
-.user:hover{
-  background:#1b2740;
-  box-shadow:0 0 15px #8a2be2;
+  cursor:pointer;
 }
 
 .user img{
-  width:45px;
-  height:45px;
+  width:50px;
+  height:50px;
   border-radius:50%;
 }
 
@@ -122,13 +107,16 @@ button:hover{
   flex-direction:column;
 }
 
+.userEmail{
+  font-size:12px;
+  opacity:0.7;
+}
+
 .status{
   font-size:12px;
   margin-top:4px;
   opacity:0.8;
 }
-
-/* CHAT AREA */
 
 .chatArea{
   flex:1;
@@ -160,18 +148,16 @@ button:hover{
 }
 
 .message{
-  max-width:320px;
+  max-width:340px;
   padding:14px;
   margin-bottom:15px;
   border-radius:18px;
   word-wrap:break-word;
-  animation:fadeIn 0.2s ease;
 }
 
 .me{
   background:linear-gradient(45deg,#00bfff,#8a2be2);
   margin-left:auto;
-  box-shadow:0 0 15px #00bfff55;
 }
 
 .other{
@@ -191,11 +177,28 @@ button:hover{
   text-align:right;
 }
 
+.tick{
+  margin-left:6px;
+}
+
+.message img{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+#typingIndicator{
+  height:25px;
+  padding-left:20px;
+  font-size:13px;
+  opacity:0.7;
+}
+
 .messageBox{
   display:flex;
+  gap:10px;
   padding:20px;
   background:#0d1320;
-  gap:10px;
 }
 
 #messageInput{
@@ -208,20 +211,10 @@ button:hover{
   outline:none;
 }
 
-#sendBtn{
-  width:120px;
+#imageBtn{
+  width:60px;
 }
 
-@keyframes fadeIn{
-
-  from{
-    opacity:0;
-    transform:translateY(10px);
-  }
-
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-
+#sendBtn{
+  width:120px;
 }
