@@ -142,10 +142,17 @@ button{
 }
 
 #chatMessages{
+
   flex:1;
+
   padding:20px;
-  padding-bottom:160px;
+
+  padding-bottom:120px;
+
   overflow-y:auto;
+
+  overflow-x:hidden;
+
 }
 
 .message{
@@ -196,13 +203,17 @@ button{
 }
 
 .messageBox{
+
   display:flex;
+
   gap:10px;
-  padding:20px;
+
+  padding:15px;
+
   background:#0d1320;
-  position:sticky;
-  bottom:0;
-  z-index:100;
+
+  border-top:1px solid #1f2a44;
+
 }
 
 #messageInput{
@@ -411,6 +422,8 @@ button{
   width:100%;
 
   height:100dvh;
+
+  overflow:hidden;
 
 }
 
