@@ -1,0 +1,359 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+body{
+  background:#070b14;
+  color:white;
+  height:100dvh;
+  overflow:hidden;
+}
+
+.app{
+  display:flex;
+  height:100dvh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+  width:350px;
+  background:#0d1320;
+  border-right:1px solid #1f2a44;
+  display:flex;
+  flex-direction:column;
+  padding:20px;
+}
+
+.logo{
+  font-size:30px;
+  font-weight:bold;
+  color:#00c3ff;
+  margin-bottom:25px;
+  text-shadow:0 0 15px #00c3ff;
+}
+
+.profile{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.profile img{
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  border:2px solid #8a2be2;
+}
+
+.onlineText{
+  color:#00ff99;
+  font-size:13px;
+  margin-top:3px;
+}
+
+button{
+  background:linear-gradient(45deg,#00bfff,#8a2be2);
+  border:none;
+  color:white;
+  padding:12px;
+  border-radius:15px;
+  cursor:pointer;
+  margin-bottom:12px;
+  font-weight:bold;
+}
+
+#searchInput{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#18233a;
+  color:white;
+  margin-bottom:15px;
+  outline:none;
+}
+
+.usersTitle{
+  margin-bottom:10px;
+  color:#00c3ff;
+}
+
+#usersList{
+  overflow-y:auto;
+  flex:1;
+}
+
+.user{
+  background:#121a2b;
+  padding:12px;
+  border-radius:15px;
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  cursor:pointer;
+}
+
+.user img{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+}
+
+.userInfo{
+  display:flex;
+  flex-direction:column;
+}
+
+.userEmail{
+  font-size:12px;
+  opacity:0.7;
+}
+
+.status{
+  font-size:12px;
+  margin-top:4px;
+  opacity:0.8;
+}
+
+/* CHAT AREA */
+
+.chatArea{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+#chatHeader{
+  padding:20px;
+  background:#0d1320;
+  border-bottom:1px solid #1f2a44;
+  flex-shrink:0;
+}
+
+#chatUserName{
+  font-size:22px;
+  color:#00c3ff;
+}
+
+#chatUserStatus{
+  margin-top:5px;
+  font-size:13px;
+  opacity:0.8;
+}
+
+#chatMessages{
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  min-height:0;
+}
+
+/* MESSAGE */
+
+.message{
+  max-width:340px;
+  padding:14px;
+  margin-bottom:15px;
+  border-radius:18px;
+  word-wrap:break-word;
+  overflow:hidden;
+  word-break:break-word;
+}
+
+.me{
+  background:linear-gradient(45deg,#00bfff,#8a2be2);
+  margin-left:auto;
+}
+
+.other{
+  background:#18233a;
+}
+
+.sender{
+  font-size:12px;
+  opacity:0.7;
+  margin-bottom:5px;
+}
+
+.time{
+  font-size:11px;
+  opacity:0.7;
+  margin-top:8px;
+  text-align:right;
+}
+
+.tick{
+  margin-left:6px;
+}
+
+.message img{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+#typingIndicator{
+  height:25px;
+  padding-left:20px;
+  font-size:13px;
+  opacity:0.7;
+}
+
+/* MESSAGE BOX */
+
+.messageBox{
+  display:flex;
+  gap:10px;
+  padding:12px;
+  background:#0d1320;
+  border-top:1px solid #1f2a44;
+  flex-shrink:0;
+}
+
+#messageInput{
+  flex:1;
+  padding:15px;
+  border:none;
+  border-radius:15px;
+  background:#18233a;
+  color:white;
+  outline:none;
+}
+
+#imageBtn{
+  width:60px;
+}
+
+#sendBtn{
+  width:120px;
+}
+
+/* BACK BUTTON */
+
+#backBtn{
+  display:none;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+  .app{
+    height:100dvh;
+    overflow:hidden;
+  }
+
+  .sidebar{
+    width:100%;
+    height:100dvh;
+    border-right:none;
+    padding:15px;
+  }
+
+  .sidebar.hide{
+    display:none;
+  }
+
+  .chatArea{
+    display:none;
+    width:100%;
+    height:100dvh;
+    flex-direction:column;
+  }
+
+  .chatArea.active{
+    display:flex;
+  }
+
+  #backBtn{
+    display:block;
+    width:50px;
+    margin-bottom:10px;
+  }
+
+  .logo{
+    font-size:24px;
+    margin-bottom:18px;
+  }
+
+  .profile img{
+    width:48px;
+    height:48px;
+  }
+
+  button{
+    padding:10px;
+    font-size:14px;
+  }
+
+  #searchInput{
+    padding:10px;
+    font-size:14px;
+  }
+
+  .user{
+    padding:10px;
+  }
+
+  .user img{
+    width:45px;
+    height:45px;
+  }
+
+  #chatHeader{
+    padding:15px;
+  }
+
+  #chatUserName{
+    font-size:20px;
+  }
+
+  #chatUserStatus{
+    font-size:12px;
+  }
+
+  #chatMessages{
+    flex:1;
+    padding:12px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    min-height:0;
+  }
+
+  .message{
+    max-width:85%;
+    padding:12px;
+    font-size:14px;
+  }
+
+  .sender{
+    font-size:11px;
+  }
+
+  .time{
+    font-size:10px;
+  }
+
+  .messageBox{
+    padding:10px;
+    gap:8px;
+  }
+
+  #messageInput{
+    padding:12px;
+    font-size:14px;
+  }
+
+  #sendBtn{
+    width:90px;
+    font-size:14px;
+  }
+
+}
