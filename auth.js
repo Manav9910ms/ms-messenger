@@ -77,83 +77,13 @@ document.getElementById("logoutBtn")
 
 };
 
-onAuthStateChanged(auth,
+onAuthStateChanged(
+auth,
 async(user)=>{
 
   if(user){
 
     setCurrentUser(user);
-
-    const userRef =
-doc(db,"users",user.uid);
-
-const userSnap =
-await getDoc(userRef);
-
-if(!userSnap.exists()){
-
-  usernamePage.classList.add(
-    "active"
-  );
-
-  saveUsernameBtn.onclick =
-  async ()=>{
-
-    let username =
-    usernameInput.value
-    .trim()
-    .toLowerCase();
-
-    username =
-    username.replace("@","");
-
-    if(username.length < 3){
-
-      alert(
-        "Username too short"
-      );
-
-      return;
-
-    }
-
-    await setDoc(userRef,{
-
-      uid:user.uid,
-
-      name:user.displayName,
-
-      username:username,
-
-      email:user.email,
-
-      photo:user.photoURL
-
-    });
-
-    setTimeout(()=>{
-
-      location.reload();
-
-    },500);
-
-  };
-
-}else{
-
-  await setDoc(userRef,{
-
-    ...userSnap.data(),
-
-    name:user.displayName,
-
-    email:user.email,
-
-    photo:user.photoURL
-
-  });
-
-}
 
     document.getElementById(
       "profilePic"
@@ -168,11 +98,70 @@ if(!userSnap.exists()){
       "loginBtn"
     ).style.display = "none";
 
-    await setDoc(
-      doc(db,"users",user.uid),
-      {
+    const userRef =
+    doc(db,"users",user.uid);
 
-        uid:user.uid,
+    const userSnap =
+    await getDoc(userRef);
+
+    if(!userSnap.exists()){
+
+      usernamePage.classList.add(
+        "active"
+      );
+
+      saveUsernameBtn.onclick =
+      async ()=>{
+
+        let username =
+        usernameInput.value
+        .trim()
+        .toLowerCase();
+
+        username =
+        username.replace("@","");
+
+        if(username.length < 3){
+
+          alert(
+            "Username too short"
+          );
+
+          return;
+
+        }
+
+        console.log(
+          "Saving username..."
+        );
+
+        await setDoc(userRef,{
+
+          uid:user.uid,
+
+          name:user.displayName,
+
+          username:username,
+
+          email:user.email,
+
+          photo:user.photoURL
+
+        });
+
+        usernamePage.classList.remove(
+          "active"
+        );
+
+        location.reload();
+
+      };
+
+    }else{
+
+      await setDoc(userRef,{
+
+        ...userSnap.data(),
 
         name:user.displayName,
 
@@ -180,8 +169,9 @@ if(!userSnap.exists()){
 
         photo:user.photoURL
 
-      }
-    );
+      });
+
+    }
 
     const statusRef =
     ref(
@@ -195,8 +185,11 @@ if(!userSnap.exists()){
     });
 
     onDisconnect(statusRef).set({
+
       online:false,
+
       lastSeen:Date.now()
+
     });
 
   }
