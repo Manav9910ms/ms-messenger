@@ -39,3 +39,10 @@ searchInput.addEventListener("input", () => {
         }
     });
 });
+
+const profilePage = document.getElementById("profilePage");
+const closeProfileBtn = document.getElementById("closeProfileBtn");
+
+const profilePageImg = document.getElementById("profilePageImg");
+const profilePageName = document.getElementById("profilePageName");
+const profilePageEmail = document.getElementById("profilePageEmail");
