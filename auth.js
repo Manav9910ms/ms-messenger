@@ -132,7 +132,7 @@ async(user)=>{
   user.displayName;
 
   profilePageEmail.innerText =
-  user.email;
+"@" + userSnap.data().username;
 
 };
 
