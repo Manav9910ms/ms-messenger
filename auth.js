@@ -1,8 +1,4 @@
 import {
-  loadUsers
-} from "./users.js";
-
-import {
   auth,
   provider,
   db,
@@ -209,11 +205,6 @@ async(user)=>{
           "active"
         );
 
-        setTimeout(()=>{
-
-          location.reload();
-
-        },500);
 
       };
 
