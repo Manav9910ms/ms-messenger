@@ -388,6 +388,31 @@ button{
 
 }
 
+#followSection{
+  margin-top:10px;
+}
+
+#followBtn{
+  padding:8px 16px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(
+    45deg,
+    #00bfff,
+    #8a2be2
+  );
+  color:white;
+  cursor:pointer;
+  margin-bottom:8px;
+}
+
+#followStats{
+  display:flex;
+  gap:15px;
+  font-size:13px;
+  opacity:0.8;
+}
+
 /* BACK BUTTON */
 
 #backBtn{
