@@ -18,11 +18,6 @@ import {
   loadMessages
 } from "./messages.js";
 
-import {
-  loadFollowStats,
-  followUser
-} from "./followers.js";
-
 async function loadUsers(){
 
   const usersList =
@@ -70,20 +65,6 @@ async function loadUsers(){
                id="status-${data.uid}">
           </div>
 
-          <div class="userFollowStats">
-
-            <span id="followers-${data.uid}">
-              0 Followers
-            </span>
-
-            ·
-
-            <span id="following-${data.uid}">
-              0 Following
-            </span>
-
-          </div>
-
         </div>
 
       `;
@@ -97,18 +78,6 @@ async function loadUsers(){
       applyStatus(
         statusRef,
         statusDiv
-      );
-
-      loadFollowStats(
-        data.uid,
-
-        document.getElementById(
-          `followers-${data.uid}`
-        ),
-
-        document.getElementById(
-          `following-${data.uid}`
-        )
       );
 
       div.onclick = ()=>{
