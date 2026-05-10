@@ -236,6 +236,12 @@ async(user)=>{
       lastSeen:Date.now()
     });
 
+    setTimeout(()=>{
+
+  loadUsers();
+
+},500);
+
   }
 
 });
