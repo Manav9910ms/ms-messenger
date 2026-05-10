@@ -47,6 +47,8 @@ document.getElementById("loginBtn")
     provider
   );
 
+  location.reload();
+
 };
 
 document.getElementById("logoutBtn")
