@@ -133,10 +133,6 @@ function loadMessages(){
 
         div.innerHTML = `
 
-          <div class="sender">
-            ${data.sender}
-          </div>
-
           <div>
             ${data.text}
           </div>
