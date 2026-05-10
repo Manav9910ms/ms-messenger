@@ -2,7 +2,9 @@ import "./auth.js";
 import "./users.js";
 import "./messages.js";
 import "./presence.js";
-
+import {
+  loadFollowStats
+} from "./followers.js";
 const backBtn =
 document.getElementById("backBtn");
 
