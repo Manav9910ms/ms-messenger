@@ -92,9 +92,16 @@ async(user)=>{
     ).src = user.photoURL;
 
     document.getElementById(
-      "profileName"
-    ).innerText =
-    user.displayName;
+  "profileName"
+).innerText =
+user.displayName;
+
+document.getElementById(
+  "profileUsername"
+).innerText =
+"@" + (
+  userSnap.data().username
+);
 
     document.getElementById(
       "loginBtn"
