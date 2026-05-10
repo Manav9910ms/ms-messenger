@@ -18,6 +18,10 @@ import {
   loadMessages
 } from "./messages.js";
 
+import {
+  loadFollowStats
+} from "./followers.js";
+
 async function loadUsers(){
 
   const usersList =
@@ -82,15 +86,15 @@ async function loadUsers(){
 
         if(window.innerWidth <= 768){
 
-  document
-  .getElementById("sidebar")
-  .classList.add("hide");
+          document
+          .getElementById("sidebar")
+          .classList.add("hide");
 
-  document
-  .getElementById("chatArea")
-  .classList.add("active");
+          document
+          .getElementById("chatArea")
+          .classList.add("active");
 
-}
+        }
 
         setSelectedUser(data);
 
@@ -110,6 +114,8 @@ async function loadUsers(){
         );
 
         loadMessages();
+
+        loadFollowStats();
 
       };
 
