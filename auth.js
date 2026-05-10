@@ -63,6 +63,7 @@ const profilePageEmail =
 document.getElementById(
   "profilePageEmail"
 );
+
 document.getElementById("loginBtn")
 .onclick = async ()=>{
 
@@ -101,7 +102,8 @@ document.getElementById("logoutBtn")
 
 };
 
-onAuthStateChanged(auth,
+onAuthStateChanged(
+auth,
 async(user)=>{
 
   if(user){
@@ -118,98 +120,102 @@ async(user)=>{
     user.displayName;
 
     document.getElementById(
-  "profilePic"
-).onclick = ()=>{
-
-  profilePage.classList.add(
-    "active"
-  );
-
-  profilePageImg.src =
-  user.photoURL;
-
-  profilePageName.innerText =
-  user.displayName;
-
-  profilePageEmail.innerText =
-"@" + userSnap.data().username;
-
-};
-
-    document.getElementById(
       "loginBtn"
     ).style.display = "none";
 
     const userRef =
-doc(db,"users",user.uid);
+    doc(db,"users",user.uid);
 
-const userSnap =
-await getDoc(userRef);
+    const userSnap =
+    await getDoc(userRef);
 
-if(!userSnap.exists()){
+    if(!userSnap.exists()){
 
-  usernamePage.classList.add(
-    "active"
-  );
-
-  saveUsernameBtn.onclick =
-  async ()=>{
-
-    let username =
-    usernameInput.value
-    .trim()
-    .toLowerCase();
-
-    username =
-    username.replace("@","");
-
-    if(username.length < 3){
-
-      alert(
-        "Username too short"
+      usernamePage.classList.add(
+        "active"
       );
 
-      return;
+      saveUsernameBtn.onclick =
+      async ()=>{
+
+        let username =
+        usernameInput.value
+        .trim()
+        .toLowerCase();
+
+        username =
+        username.replace("@","");
+
+        if(username.length < 3){
+
+          alert(
+            "Username too short"
+          );
+
+          return;
+
+        }
+
+        await setDoc(userRef,{
+
+          uid:user.uid,
+
+          name:user.displayName,
+
+          username:username,
+
+          email:user.email,
+
+          photo:user.photoURL
+
+        });
+
+        usernamePage.classList.remove(
+          "active"
+        );
+
+        setTimeout(()=>{
+
+          location.reload();
+
+        },500);
+
+      };
+
+    }else{
+
+      await setDoc(userRef,{
+
+        ...userSnap.data(),
+
+        name:user.displayName,
+
+        email:user.email,
+
+        photo:user.photoURL
+
+      });
 
     }
 
-    await setDoc(userRef,{
+    document.getElementById(
+      "profilePic"
+    ).onclick = ()=>{
 
-      uid:user.uid,
+      profilePage.classList.add(
+        "active"
+      );
 
-      name:user.displayName,
+      profilePageImg.src =
+      user.photoURL;
 
-      username:username,
+      profilePageName.innerText =
+      user.displayName;
 
-      email:user.email,
+      profilePageEmail.innerText =
+      "@" + userSnap.data().username;
 
-      photo:user.photoURL
-
-    });
-
-    usernamePage.classList.remove(
-      "active"
-    );
-
-    location.reload();
-
-  };
-
-}else{
-
-  await setDoc(userRef,{
-
-    ...userSnap.data(),
-
-    name:user.displayName,
-
-    email:user.email,
-
-    photo:user.photoURL
-
-  });
-
-}
+    };
 
     const statusRef =
     ref(
@@ -226,6 +232,12 @@ if(!userSnap.exists()){
       online:false,
       lastSeen:Date.now()
     });
+
+    setTimeout(()=>{
+
+      location.reload();
+
+    },500);
 
   }
 
