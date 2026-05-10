@@ -19,7 +19,8 @@ import {
 } from "./messages.js";
 
 import {
-  loadFollowStats
+  loadFollowStats,
+  followUser
 } from "./followers.js";
 
 async function loadUsers(){
@@ -55,9 +56,11 @@ async function loadUsers(){
 
         <img src="${data.photo}">
 
-        <div>
+        <div class="userInfo">
 
-          <div>${data.name}</div>
+          <div>
+            ${data.name}
+          </div>
 
           <div class="userEmail">
             @${data.username || "user"}
@@ -65,6 +68,20 @@ async function loadUsers(){
 
           <div class="status"
                id="status-${data.uid}">
+          </div>
+
+          <div class="userFollowStats">
+
+            <span id="followers-${data.uid}">
+              0 Followers
+            </span>
+
+            ·
+
+            <span id="following-${data.uid}">
+              0 Following
+            </span>
+
           </div>
 
         </div>
@@ -80,6 +97,18 @@ async function loadUsers(){
       applyStatus(
         statusRef,
         statusDiv
+      );
+
+      loadFollowStats(
+        data.uid,
+
+        document.getElementById(
+          `followers-${data.uid}`
+        ),
+
+        document.getElementById(
+          `following-${data.uid}`
+        )
       );
 
       div.onclick = ()=>{
@@ -114,8 +143,6 @@ async function loadUsers(){
         );
 
         loadMessages();
-
-        loadFollowStats();
 
       };
 
