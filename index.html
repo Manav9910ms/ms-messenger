@@ -76,14 +76,36 @@
       <div id="chatHeader">
 
         <button id="backBtn">
-  ←
-</button>
+          ←
+        </button>
 
         <div id="chatUserName">
           Select User
         </div>
 
         <div id="chatUserStatus"></div>
+
+        <!-- FOLLOW SECTION -->
+
+        <div id="followSection">
+
+          <button id="followBtn">
+            Follow
+          </button>
+
+          <div id="followStats">
+
+            <span id="followersCount">
+              0 Followers
+            </span>
+
+            <span id="followingCount">
+              0 Following
+            </span>
+
+          </div>
+
+        </div>
 
       </div>
 
@@ -107,48 +129,57 @@
 
   <!-- PROFILE PAGE -->
 
-<div id="profilePage" class="profilePage">
+  <div id="profilePage"
+       class="profilePage">
 
-    <button id="closeProfileBtn">← Back</button>
+    <button id="closeProfileBtn">
+      ← Back
+    </button>
 
     <div class="profileCard">
 
-        <img id="profilePageImg" src="" alt="Profile">
+      <img id="profilePageImg"
+           src=""
+           alt="Profile">
 
-        <h2 id="profilePageName">User Name</h2>
+      <h2 id="profilePageName">
+        User Name
+      </h2>
 
-        <p id="profilePageEmail">user@gmail.com</p>
+      <p id="profilePageEmail">
+        @username
+      </p>
 
     </div>
 
-</div>
+  </div>
 
   <!-- USERNAME SETUP -->
 
-<div id="usernamePage"
-     class="usernamePage">
+  <div id="usernamePage"
+       class="usernamePage">
 
     <div class="usernameCard">
 
-        <h1>
-          Create Username
-        </h1>
+      <h1>
+        Create Username
+      </h1>
 
-        <p>
-          Choose your public username
-        </p>
+      <p>
+        Choose your public username
+      </p>
 
-        <input type="text"
-               id="usernameInput"
-               placeholder="@username">
+      <input type="text"
+             id="usernameInput"
+             placeholder="@username">
 
-        <button id="saveUsernameBtn">
-          Continue
-        </button>
+      <button id="saveUsernameBtn">
+        Continue
+      </button>
 
     </div>
 
-</div>
+  </div>
 
   <script type="module"
           src="script.js"></script>
