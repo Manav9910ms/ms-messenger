@@ -39,6 +39,10 @@ document.getElementById(
   "saveUsernameBtn"
 );
 
+document.getElementById(
+  "logoutBtn"
+).style.display = "none";
+
 document.getElementById("loginBtn")
 .onclick = async ()=>{
 
@@ -88,24 +92,12 @@ async(user)=>{
     setCurrentUser(user);
 
     document.getElementById(
-      "profilePic"
-    ).src = user.photoURL;
-
-    document.getElementById(
-  "profileName"
-).innerText =
-user.displayName;
-
-document.getElementById(
-  "profileUsername"
-).innerText =
-"@" + (
-  userSnap.data().username
-);
-
-    document.getElementById(
       "loginBtn"
     ).style.display = "none";
+
+    document.getElementById(
+      "logoutBtn"
+    ).style.display = "block";
 
     const userRef =
     doc(db,"users",user.uid);
@@ -140,10 +132,6 @@ document.getElementById(
 
         }
 
-        console.log(
-          "Saving username..."
-        );
-
         await setDoc(userRef,{
 
           uid:user.uid,
@@ -166,6 +154,8 @@ document.getElementById(
 
       };
 
+      return;
+
     }else{
 
       await setDoc(userRef,{
@@ -181,6 +171,23 @@ document.getElementById(
       });
 
     }
+
+    document.getElementById(
+      "profilePic"
+    ).src = user.photoURL;
+
+    document.getElementById(
+      "profileName"
+    ).innerText =
+    user.displayName;
+
+    document.getElementById(
+      "profileUsername"
+    ).innerText =
+    "@" + (
+      userSnap.data().username ||
+      "user"
+    );
 
     const statusRef =
     ref(
@@ -200,6 +207,16 @@ document.getElementById(
       lastSeen:Date.now()
 
     });
+
+  }else{
+
+    document.getElementById(
+      "loginBtn"
+    ).style.display = "block";
+
+    document.getElementById(
+      "logoutBtn"
+    ).style.display = "none";
 
   }
 
