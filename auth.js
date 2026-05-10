@@ -23,6 +23,31 @@ import {
   onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+
+const profilePage =
+document.getElementById(
+  "profilePage"
+);
+
+const closeProfileBtn =
+document.getElementById(
+  "closeProfileBtn"
+);
+
+const profilePageImg =
+document.getElementById(
+  "profilePageImg"
+);
+
+const profilePageName =
+document.getElementById(
+  "profilePageName"
+);
+
+const profilePageEmail =
+document.getElementById(
+  "profilePageEmail"
+);
 document.getElementById("loginBtn")
 .onclick = async ()=>{
 
@@ -78,6 +103,25 @@ async(user)=>{
     user.displayName;
 
     document.getElementById(
+  "profilePic"
+).onclick = ()=>{
+
+  profilePage.classList.add(
+    "active"
+  );
+
+  profilePageImg.src =
+  user.photoURL;
+
+  profilePageName.innerText =
+  user.displayName;
+
+  profilePageEmail.innerText =
+  user.email;
+
+};
+
+    document.getElementById(
       "loginBtn"
     ).style.display = "none";
 
@@ -115,3 +159,12 @@ async(user)=>{
   }
 
 });
+
+closeProfileBtn.onclick =
+()=>{
+
+  profilePage.classList.remove(
+    "active"
+  );
+
+};
