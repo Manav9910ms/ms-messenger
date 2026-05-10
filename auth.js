@@ -14,7 +14,8 @@ import {
 
 import {
   setDoc,
-  doc
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -22,6 +23,21 @@ import {
   set,
   onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const usernamePage =
+document.getElementById(
+  "usernamePage"
+);
+
+const usernameInput =
+document.getElementById(
+  "usernameInput"
+);
+
+const saveUsernameBtn =
+document.getElementById(
+  "saveUsernameBtn"
+);
 
 document.getElementById("loginBtn")
 .onclick = async ()=>{
@@ -67,6 +83,77 @@ async(user)=>{
   if(user){
 
     setCurrentUser(user);
+
+    const userRef =
+doc(db,"users",user.uid);
+
+const userSnap =
+await getDoc(userRef);
+
+if(!userSnap.exists()){
+
+  usernamePage.classList.add(
+    "active"
+  );
+
+  saveUsernameBtn.onclick =
+  async ()=>{
+
+    let username =
+    usernameInput.value
+    .trim()
+    .toLowerCase();
+
+    username =
+    username.replace("@","");
+
+    if(username.length < 3){
+
+      alert(
+        "Username too short"
+      );
+
+      return;
+
+    }
+
+    await setDoc(userRef,{
+
+      uid:user.uid,
+
+      name:user.displayName,
+
+      username:username,
+
+      email:user.email,
+
+      photo:user.photoURL
+
+    });
+
+    setTimeout(()=>{
+
+      location.reload();
+
+    },500);
+
+  };
+
+}else{
+
+  await setDoc(userRef,{
+
+    ...userSnap.data(),
+
+    name:user.displayName,
+
+    email:user.email,
+
+    photo:user.photoURL
+
+  });
+
+}
 
     document.getElementById(
       "profilePic"
