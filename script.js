@@ -4,7 +4,9 @@ import "./messages.js";
 import "./presence.js";
 
 const backBtn =
-document.getElementById("backBtn");
+document.getElementById(
+  "backBtn"
+);
 
 if(backBtn){
 
@@ -28,40 +30,39 @@ document.getElementById(
 );
 
 searchInput.addEventListener(
-  "input",
-  ()=>{
+"input",
+()=>{
 
-    const value =
-    searchInput.value
+  const value =
+  searchInput.value
+  .toLowerCase();
+
+  const users =
+  document.querySelectorAll(
+    ".user"
+  );
+
+  users.forEach(user=>{
+
+    const text =
+    user.innerText
     .toLowerCase();
 
-    const users =
-    document.querySelectorAll(
-      ".user"
-    );
+    if(text.includes(value)){
 
-    users.forEach((user)=>{
+      user.style.display =
+      "flex";
 
-      const text =
-      user.innerText
-      .toLowerCase();
+    }else{
 
-      if(text.includes(value)){
+      user.style.display =
+      "none";
 
-        user.style.display =
-        "flex";
+    }
 
-      }else{
+  });
 
-        user.style.display =
-        "none";
-
-      }
-
-    });
-
-  }
-);
+});
 
 const profilePage =
 document.getElementById(
@@ -73,17 +74,11 @@ document.getElementById(
   "closeProfileBtn"
 );
 
-const profilePageImg =
-document.getElementById(
-  "profilePageImg"
-);
+closeProfileBtn.onclick =
+()=>{
 
-const profilePageName =
-document.getElementById(
-  "profilePageName"
-);
+  profilePage.classList.remove(
+    "active"
+  );
 
-const profilePageEmail =
-document.getElementById(
-  "profilePageEmail"
-);
+};
