@@ -1,4 +1,7 @@
 import {
+  loadUsers
+} from "./users.js";
+import {
   auth,
   provider,
   db,
