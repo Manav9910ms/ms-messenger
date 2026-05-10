@@ -133,19 +133,15 @@ function loadMessages(){
 
         div.innerHTML = `
 
-          <div class="sender">
-            ${data.sender}
-          </div>
+  <div>
+    ${data.text}
+  </div>
 
-          <div>
-            ${data.text}
-          </div>
+  <div class="time">
+    ${time} ${tick}
+  </div>
 
-          <div class="time">
-            ${time} ${tick}
-          </div>
-
-        `;
+`;
 
         chat.appendChild(div);
 
