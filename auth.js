@@ -1,6 +1,7 @@
 import {
   loadUsers
 } from "./users.js";
+
 import {
   auth,
   provider,
@@ -26,6 +27,10 @@ import {
   set,
   onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import {
+  loadFollowStats
+} from "./followers.js";
 
 const usernamePage =
 document.getElementById(
@@ -67,8 +72,9 @@ document.getElementById(
   "profilePageEmail"
 );
 
-document.getElementById("loginBtn")
-.onclick = async ()=>{
+document.getElementById(
+  "loginBtn"
+).onclick = async ()=>{
 
   await signInWithPopup(
     auth,
@@ -77,10 +83,12 @@ document.getElementById("loginBtn")
 
 };
 
-document.getElementById("logoutBtn")
-.onclick = async ()=>{
+document.getElementById(
+  "logoutBtn"
+).onclick = async ()=>{
 
-  const user = auth.currentUser;
+  const user =
+  auth.currentUser;
 
   if(user){
 
@@ -99,7 +107,9 @@ document.getElementById("logoutBtn")
 
   await signOut(auth);
 
-  alert("Logout Successfully");
+  alert(
+    "Logout Successfully"
+  );
 
   location.reload();
 
@@ -115,7 +125,8 @@ async(user)=>{
 
     document.getElementById(
       "profilePic"
-    ).src = user.photoURL;
+    ).src =
+    user.photoURL;
 
     document.getElementById(
       "profileName"
@@ -124,10 +135,28 @@ async(user)=>{
 
     document.getElementById(
       "loginBtn"
-    ).style.display = "none";
+    ).style.display =
+    "none";
+
+    document.getElementById(
+      "logoutBtn"
+    ).style.display =
+    "block";
+
+    document.getElementById(
+      "myFollowers"
+    ).innerText = "";
+
+    document.getElementById(
+      "myFollowing"
+    ).innerText = "";
 
     const userRef =
-    doc(db,"users",user.uid);
+    doc(
+      db,
+      "users",
+      user.uid
+    );
 
     const userSnap =
     await getDoc(userRef);
@@ -147,7 +176,10 @@ async(user)=>{
         .toLowerCase();
 
         username =
-        username.replace("@","");
+        username.replace(
+          "@",
+          ""
+        );
 
         if(username.length < 3){
 
@@ -201,6 +233,13 @@ async(user)=>{
 
     }
 
+    profilePageEmail.innerText =
+    "@" +
+    (
+      userSnap.data()?.username
+      || "user"
+    );
+
     document.getElementById(
       "profilePic"
     ).onclick = ()=>{
@@ -216,7 +255,11 @@ async(user)=>{
       user.displayName;
 
       profilePageEmail.innerText =
-      "@" + userSnap.data().username;
+      "@" +
+      (
+        userSnap.data()?.username
+        || "user"
+      );
 
     };
 
@@ -231,16 +274,63 @@ async(user)=>{
       lastSeen:Date.now()
     });
 
-    onDisconnect(statusRef).set({
+    onDisconnect(
+      statusRef
+    ).set({
       online:false,
       lastSeen:Date.now()
     });
 
+    loadFollowStats(
+
+      user.uid,
+
+      document.getElementById(
+        "myFollowers"
+      ),
+
+      document.getElementById(
+        "myFollowing"
+      )
+
+    );
+
     setTimeout(()=>{
 
-  loadUsers();
+      loadUsers();
 
-},500);
+    },500);
+
+  }else{
+
+    document.getElementById(
+      "profileName"
+    ).innerText =
+    "Guest";
+
+    document.getElementById(
+      "profilePic"
+    ).src = "";
+
+    document.getElementById(
+      "loginBtn"
+    ).style.display =
+    "block";
+
+    document.getElementById(
+      "logoutBtn"
+    ).style.display =
+    "none";
+
+    document.getElementById(
+      "myFollowers"
+    ).innerText =
+    "";
+
+    document.getElementById(
+      "myFollowing"
+    ).innerText =
+    "";
 
   }
 
