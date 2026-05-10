@@ -2,19 +2,9 @@ import "./auth.js";
 import "./users.js";
 import "./messages.js";
 import "./presence.js";
-import {
-  loadFollowStats
-} from "./followers.js";
+
 const backBtn =
 document.getElementById("backBtn");
-
-import {
-  loadFollowStats
-} from "./followers.js";
-
-import {
-  currentUser
-} from "./firebase.js";
 
 if(backBtn){
 
@@ -32,47 +22,68 @@ if(backBtn){
 
 }
 
-const searchInput = document.getElementById("searchInput");
+const searchInput =
+document.getElementById(
+  "searchInput"
+);
 
-searchInput.addEventListener("input", () => {
-    const value = searchInput.value.toLowerCase();
+searchInput.addEventListener(
+  "input",
+  ()=>{
 
-    const users = document.querySelectorAll(".user");
+    const value =
+    searchInput.value
+    .toLowerCase();
 
-    users.forEach(user => {
-        const text = user.innerText.toLowerCase();
-
-        if(text.includes(value)){
-            user.style.display = "flex";
-        } else {
-            user.style.display = "none";
-        }
-    });
-});
-
-const profilePage = document.getElementById("profilePage");
-const closeProfileBtn = document.getElementById("closeProfileBtn");
-
-const profilePageImg = document.getElementById("profilePageImg");
-const profilePageName = document.getElementById("profilePageName");
-const profilePageEmail = document.getElementById("profilePageEmail");
-
-setTimeout(()=>{
-
-  if(currentUser){
-
-    loadFollowStats(
-      currentUser.uid,
-
-      document.getElementById(
-        "myFollowers"
-      ),
-
-      document.getElementById(
-        "myFollowing"
-      )
+    const users =
+    document.querySelectorAll(
+      ".user"
     );
 
-  }
+    users.forEach((user)=>{
 
-},2000);
+      const text =
+      user.innerText
+      .toLowerCase();
+
+      if(text.includes(value)){
+
+        user.style.display =
+        "flex";
+
+      }else{
+
+        user.style.display =
+        "none";
+
+      }
+
+    });
+
+  }
+);
+
+const profilePage =
+document.getElementById(
+  "profilePage"
+);
+
+const closeProfileBtn =
+document.getElementById(
+  "closeProfileBtn"
+);
+
+const profilePageImg =
+document.getElementById(
+  "profilePageImg"
+);
+
+const profilePageName =
+document.getElementById(
+  "profilePageName"
+);
+
+const profilePageEmail =
+document.getElementById(
+  "profilePageEmail"
+);
