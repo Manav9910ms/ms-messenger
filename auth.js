@@ -233,12 +233,6 @@ async(user)=>{
       lastSeen:Date.now()
     });
 
-    setTimeout(()=>{
-
-      location.reload();
-
-    },500);
-
   }
 
 });
