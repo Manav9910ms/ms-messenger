@@ -8,6 +8,14 @@ import {
 const backBtn =
 document.getElementById("backBtn");
 
+import {
+  loadFollowStats
+} from "./followers.js";
+
+import {
+  currentUser
+} from "./firebase.js";
+
 if(backBtn){
 
   backBtn.onclick = ()=>{
@@ -48,3 +56,23 @@ const closeProfileBtn = document.getElementById("closeProfileBtn");
 const profilePageImg = document.getElementById("profilePageImg");
 const profilePageName = document.getElementById("profilePageName");
 const profilePageEmail = document.getElementById("profilePageEmail");
+
+setTimeout(()=>{
+
+  if(currentUser){
+
+    loadFollowStats(
+      currentUser.uid,
+
+      document.getElementById(
+        "myFollowers"
+      ),
+
+      document.getElementById(
+        "myFollowing"
+      )
+    );
+
+  }
+
+},2000);
