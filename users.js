@@ -56,7 +56,7 @@ async function loadUsers(){
           <div>${data.name}</div>
 
           <div class="userEmail">
-            ${data.email}
+            @${data.username}
           </div>
 
           <div class="status"
