@@ -88,14 +88,25 @@ button{
 }
 
 .user{
+
   background:#121a2b;
+
   padding:12px;
+
   border-radius:15px;
+
   margin-bottom:10px;
+
   display:flex;
+
   align-items:center;
+
   gap:12px;
+
   cursor:pointer;
+
+  position:relative;
+
 }
 
 .user img{
@@ -329,7 +340,16 @@ button{
 
 .unreadBadge{
 
+  position:absolute;
+
+  right:12px;
+
+  top:50%;
+
+  transform:translateY(-50%);
+
   min-width:22px;
+
   height:22px;
 
   background:#ff2b2b;
@@ -339,32 +359,21 @@ button{
   display:none;
 
   justify-content:center;
+
   align-items:center;
 
   color:white;
 
   font-size:11px;
+
   font-weight:bold;
 
-  flex-shrink:0;
+  padding:0 6px;
 
-  margin-left:auto;
-
-}
-
-.userTop{
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  gap:10px;
-
-  width:100%;
+  z-index:5;
 
 }
+
 
 .userInfo{
 
