@@ -142,13 +142,30 @@ async(user)=>{
 
         if(username.length < 3){
 
-          alert(
-            "Username too short"
-          );
+  alert(
+    "Username too short"
+  );
 
-          return;
+  return;
 
-        }
+}
+
+// ONLY a-z A-Z 0-9 . _
+
+const validUsername =
+/^[a-zA-Z0-9._]+$/;
+
+if(
+  !validUsername.test(username)
+){
+
+  alert(
+    "Only letters, numbers, dot(.) and underscore(_) allowed"
+  );
+
+  return;
+
+}
 
         // CHECK USERNAME EXISTS
 
