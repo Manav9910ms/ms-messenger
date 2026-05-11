@@ -1,37 +1,7 @@
 import "./auth.js";
-
-import {
-  loadUsers
-} from "./users.js";
-
-import {
-  loadUnreadCounts
-} from "./messages.js";
-
+import "./users.js";
+import "./messages.js";
 import "./presence.js";
-
-if(
-  Notification.permission !==
-  "granted"
-){
-
-  Notification.requestPermission();
-
-}
-
-// LOAD USERS
-
-loadUsers();
-
-// LOAD UNREAD BADGES
-
-setTimeout(()=>{
-
-  loadUnreadCounts();
-
-},2000);
-
-// MOBILE BACK BUTTON
 
 const backBtn =
 document.getElementById("backBtn");
@@ -52,47 +22,20 @@ if(backBtn){
 
 }
 
-// SEARCH USERS
+const searchInput = document.getElementById("searchInput");
 
-const searchInput =
-document.getElementById(
-  "searchInput"
-);
+searchInput.addEventListener("input", () => {
+    const value = searchInput.value.toLowerCase();
 
-searchInput.addEventListener(
-  "input",
-  ()=>{
+    const users = document.querySelectorAll(".user");
 
-    const value =
-    searchInput.value
-    .toLowerCase();
+    users.forEach(user => {
+        const text = user.innerText.toLowerCase();
 
-    const users =
-    document.querySelectorAll(
-      ".user"
-    );
-
-    users.forEach((user)=>{
-
-      const text =
-      user.innerText
-      .toLowerCase();
-
-      if(
-        text.includes(value)
-      ){
-
-        user.style.display =
-        "flex";
-
-      }else{
-
-        user.style.display =
-        "none";
-
-      }
-
+        if(text.includes(value)){
+            user.style.display = "flex";
+        } else {
+            user.style.display = "none";
+        }
     });
-
-  }
-);
+});

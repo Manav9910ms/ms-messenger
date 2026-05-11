@@ -14,8 +14,6 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// SEND MESSAGE
-
 document.getElementById("sendBtn")
 .onclick = async ()=>{
 
@@ -32,14 +30,9 @@ document.getElementById("sendBtn")
     collection(db,"messages"),
     {
 
-      sender:currentUser.uid,
+      sender:currentUser.email,
 
-      senderUsername:
-      document.getElementById(
-        "profileUsername"
-      ).innerText,
-
-      receiver:selectedUser.uid,
+      receiver:selectedUser.email,
 
       text:text,
 
@@ -55,8 +48,6 @@ document.getElementById("sendBtn")
   ).value = "";
 
 };
-
-// LOAD CHAT MESSAGES
 
 function loadMessages(){
 
@@ -80,20 +71,18 @@ function loadMessages(){
       docSnap.data();
 
       const c1 =
-      data.sender === currentUser.uid &&
-      data.receiver === selectedUser.uid;
+      data.sender === currentUser.email &&
+      data.receiver === selectedUser.email;
 
       const c2 =
-      data.sender === selectedUser.uid &&
-      data.receiver === currentUser.uid;
+      data.sender === selectedUser.email &&
+      data.receiver === currentUser.email;
 
       if(c1 || c2){
 
-        // MARK AS SEEN
-
         if(
-          data.receiver === currentUser.uid &&
-          !data.seen
+          data.receiver === currentUser.email
+          && !data.seen
         ){
 
           updateDoc(
@@ -115,7 +104,7 @@ function loadMessages(){
         div.className =
         "message " +
         (
-          data.sender === currentUser.uid
+          data.sender === currentUser.email
           ? "me"
           : "other"
         );
@@ -125,14 +114,14 @@ function loadMessages(){
 
         const time =
         date.toLocaleTimeString([],{
-          hour:"2-digit",
-          minute:"2-digit"
+          hour:'2-digit',
+          minute:'2-digit'
         });
 
         let tick = "";
 
         if(
-          data.sender === currentUser.uid
+          data.sender === currentUser.email
         ){
 
           tick =
@@ -167,114 +156,4 @@ function loadMessages(){
 
 }
 
-// LOAD UNREAD COUNTS + NOTIFICATIONS
-
-function loadUnreadCounts(){
-
-  const q = query(
-    collection(db,"messages"),
-    orderBy("time")
-  );
-
-  onSnapshot(q,(snapshot)=>{
-
-    // RESET BADGES
-
-    document
-    .querySelectorAll(
-      ".unreadBadge"
-    )
-    .forEach((badge)=>{
-
-      badge.style.display =
-      "none";
-
-    });
-
-    const unreadCounts = {};
-
-    snapshot.forEach((docSnap)=>{
-
-      const data =
-      docSnap.data();
-
-      if(
-        data.receiver === currentUser.uid &&
-        !data.seen
-      ){
-
-        // COUNT
-
-        if(
-          !unreadCounts[data.sender]
-        ){
-
-          unreadCounts[
-            data.sender
-          ] = 0;
-
-        }
-
-        unreadCounts[
-          data.sender
-        ]++;
-
-        // NOTIFICATION
-
-        if(
-          Notification.permission ===
-          "granted"
-        ){
-
-          new Notification(
-
-            data.senderUsername +
-            " messaged you",
-
-            {
-
-              body:data.text,
-
-              icon:"favicon.png"
-
-            }
-
-          );
-
-        }
-
-      }
-
-    });
-
-    // SHOW BADGES
-
-    Object.keys(
-      unreadCounts
-    ).forEach((sender)=>{
-
-      const badge =
-      document.getElementById(
-        "unread-" + sender
-      );
-
-      if(badge){
-
-        badge.style.display =
-        "flex";
-
-        badge.innerText =
-        unreadCounts[sender];
-
-      }
-
-    });
-
-  });
-
-}
-
-export {
-  loadMessages,
-  loadUnreadCounts
-};
+export { loadMessages };
