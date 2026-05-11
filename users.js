@@ -39,7 +39,7 @@ async function loadUsers(){
 
     if(
       currentUser &&
-      data.email !== currentUser.email
+      data.uid !== currentUser.uid
     ){
 
       const div =
@@ -51,21 +51,31 @@ async function loadUsers(){
 
         <img src="${data.photo}">
 
-        <div>
+        <div class="userInfo">
 
-          <div>${data.name}</div>
+          <div class="userTop">
 
-          <div class="userEmail">
-            @${data.username || "user"}
+            <div>
+
+              <div class="userName">
+                ${data.name}
+              </div>
+
+              <div class="userEmail">
+                @${data.username || "user"}
+              </div>
+
+              <div class="status"
+                   id="status-${data.uid}">
+              </div>
+
+            </div>
+
+            <div class="unreadBadge"
+                 id="unread-${data.uid}">
+            </div>
+
           </div>
-
-          <div class="status"
-               id="status-${data.uid}">
-          </div>
-
-          <div class="unreadBadge"
-     id="unread-${data.uid}">
-</div>
 
         </div>
 
@@ -86,15 +96,15 @@ async function loadUsers(){
 
         if(window.innerWidth <= 768){
 
-  document
-  .getElementById("sidebar")
-  .classList.add("hide");
+          document
+          .getElementById("sidebar")
+          .classList.add("hide");
 
-  document
-  .getElementById("chatArea")
-  .classList.add("active");
+          document
+          .getElementById("chatArea")
+          .classList.add("active");
 
-}
+        }
 
         setSelectedUser(data);
 
@@ -112,6 +122,19 @@ async function loadUsers(){
           statusRef,
           headerStatus
         );
+
+        // HIDE UNREAD BADGE
+        const badge =
+        document.getElementById(
+          "unread-" + data.uid
+        );
+
+        if(badge){
+
+          badge.style.display =
+          "none";
+
+        }
 
         loadMessages();
 
