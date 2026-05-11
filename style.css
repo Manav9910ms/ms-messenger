@@ -87,6 +87,8 @@ button{
   flex:1;
 }
 
+/* USER CARD */
+
 .user{
   background:#121a2b;
   padding:12px;
@@ -96,6 +98,7 @@ button{
   align-items:center;
   gap:12px;
   cursor:pointer;
+  position:relative;
 }
 
 .user img{
@@ -107,6 +110,7 @@ button{
 .userInfo{
   display:flex;
   flex-direction:column;
+  min-width:0;
 }
 
 .userEmail{
@@ -118,6 +122,44 @@ button{
   font-size:12px;
   margin-top:4px;
   opacity:0.8;
+}
+
+/* UNREAD BADGE */
+
+.unreadBadge{
+
+  position:absolute;
+
+  right:12px;
+
+  top:50%;
+
+  transform:translateY(-50%);
+
+  min-width:22px;
+
+  height:22px;
+
+  background:#ff2b2b;
+
+  border-radius:50%;
+
+  display:none;
+
+  justify-content:center;
+
+  align-items:center;
+
+  color:white;
+
+  font-size:11px;
+
+  font-weight:bold;
+
+  padding:0 6px;
+
+  z-index:5;
+
 }
 
 /* CHAT AREA */
