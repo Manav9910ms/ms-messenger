@@ -83,6 +83,17 @@ function loadMessages(){
       const data =
       docSnap.data();
 
+      // SKIP OLD EMAIL MESSAGES
+
+      if(
+        !data.senderUid ||
+        !data.receiverUid
+      ){
+
+        return;
+
+      }
+
       const c1 =
       data.senderUid ===
       currentUser.uid &&
@@ -219,6 +230,17 @@ function loadUnreadCounts(){
 
       const data =
       docSnap.data();
+
+      // SKIP OLD EMAIL MESSAGES
+
+      if(
+        !data.senderUid ||
+        !data.receiverUid
+      ){
+
+        return;
+
+      }
 
       if(
 
