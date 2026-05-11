@@ -33,9 +33,15 @@ getDatabase(app);
 export const provider =
 new GoogleAuthProvider();
 
+// CURRENT USER
+
 export let currentUser = null;
 
+// SELECTED CHAT USER
+
 export let selectedUser = null;
+
+// SET CURRENT USER
 
 export function setCurrentUser(user){
 
@@ -43,8 +49,18 @@ export function setCurrentUser(user){
 
 }
 
+// SET SELECTED USER
+
 export function setSelectedUser(user){
 
   selectedUser = user;
+
+}
+
+// CLEAR SELECTED USER
+
+export function clearSelectedUser(){
+
+  selectedUser = null;
 
 }
