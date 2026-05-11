@@ -63,6 +63,10 @@ async function loadUsers(){
                id="status-${data.uid}">
           </div>
 
+          <div class="unreadBadge"
+     id="unread-${data.uid}">
+</div>
+
         </div>
 
       `;
