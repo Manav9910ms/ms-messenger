@@ -105,6 +105,8 @@ async(user)=>{
     const userSnap =
     await getDoc(userRef);
 
+    // NEW USER
+
     if(!userSnap.exists()){
 
       usernamePage.classList.add(
@@ -132,6 +134,32 @@ async(user)=>{
 
         }
 
+        // CHECK USERNAME EXISTS
+
+        const usernameRef =
+        doc(
+          db,
+          "usernames",
+          username
+        );
+
+        const usernameSnap =
+        await getDoc(
+          usernameRef
+        );
+
+        if(usernameSnap.exists()){
+
+          alert(
+            "Username already taken"
+          );
+
+          return;
+
+        }
+
+        // SAVE USER
+
         await setDoc(userRef,{
 
           uid:user.uid,
@@ -146,6 +174,15 @@ async(user)=>{
 
         });
 
+        // RESERVE USERNAME
+
+        await setDoc(
+          usernameRef,
+          {
+            uid:user.uid
+          }
+        );
+
         usernamePage.classList.remove(
           "active"
         );
@@ -157,6 +194,8 @@ async(user)=>{
       return;
 
     }else{
+
+      // UPDATE EXISTING USER
 
       await setDoc(userRef,{
 
@@ -171,6 +210,8 @@ async(user)=>{
       });
 
     }
+
+    // PROFILE UI
 
     document.getElementById(
       "profilePic"
@@ -188,6 +229,8 @@ async(user)=>{
       userSnap.data().username ||
       "user"
     );
+
+    // ONLINE STATUS
 
     const statusRef =
     ref(
