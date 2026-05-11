@@ -327,6 +327,29 @@ button{
 
 }
 
+.unreadBadge{
+
+  min-width:22px;
+  height:22px;
+
+  background:#ff2b2b;
+
+  border-radius:50%;
+
+  display:none;
+
+  justify-content:center;
+  align-items:center;
+
+  font-size:12px;
+  font-weight:bold;
+
+  color:white;
+
+  margin-top:6px;
+
+}
+
 /* BACK BUTTON */
 
 #backBtn{
