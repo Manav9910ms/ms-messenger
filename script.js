@@ -1,41 +1,99 @@
 import "./auth.js";
-import "./users.js";
-import "./messages.js";
+
+import {
+  loadUsers
+} from "./users.js";
+
+import {
+  loadUnreadCounts
+} from "./messages.js";
+
 import "./presence.js";
 
+// LOAD USERS
+
+loadUsers();
+
+// LOAD UNREADS
+
+setTimeout(()=>{
+
+  loadUnreadCounts();
+
+},2000);
+
+// MOBILE BACK BUTTON
+
 const backBtn =
-document.getElementById("backBtn");
+document.getElementById(
+  "backBtn"
+);
 
 if(backBtn){
 
   backBtn.onclick = ()=>{
 
     document
-    .getElementById("sidebar")
-    .classList.remove("hide");
+    .getElementById(
+      "sidebar"
+    )
+    .classList.remove(
+      "hide"
+    );
 
     document
-    .getElementById("chatArea")
-    .classList.remove("active");
+    .getElementById(
+      "chatArea"
+    )
+    .classList.remove(
+      "active"
+    );
 
   };
 
 }
 
-const searchInput = document.getElementById("searchInput");
+// SEARCH USERS
 
-searchInput.addEventListener("input", () => {
-    const value = searchInput.value.toLowerCase();
+const searchInput =
+document.getElementById(
+  "searchInput"
+);
 
-    const users = document.querySelectorAll(".user");
+searchInput.addEventListener(
+  "input",
+  ()=>{
 
-    users.forEach(user => {
-        const text = user.innerText.toLowerCase();
+    const value =
+    searchInput.value
+    .toLowerCase();
 
-        if(text.includes(value)){
-            user.style.display = "flex";
-        } else {
-            user.style.display = "none";
-        }
+    const users =
+    document.querySelectorAll(
+      ".user"
+    );
+
+    users.forEach((user)=>{
+
+      const text =
+      user.innerText
+      .toLowerCase();
+
+      if(
+        text.includes(value)
+      ){
+
+        user.style.display =
+        "flex";
+
+      }else{
+
+        user.style.display =
+        "none";
+
+      }
+
     });
-});
+
+  }
+);
