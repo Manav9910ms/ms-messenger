@@ -14,6 +14,8 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// SEND MESSAGE
+
 document.getElementById("sendBtn")
 .onclick = async ()=>{
 
@@ -49,6 +51,8 @@ document.getElementById("sendBtn")
 
 };
 
+// LOAD MESSAGES
+
 function loadMessages(){
 
   const q = query(
@@ -65,10 +69,48 @@ function loadMessages(){
 
     chat.innerHTML = "";
 
+    // RESET BADGES
+
+    document
+    .querySelectorAll(
+      ".unreadBadge"
+    )
+    .forEach((badge)=>{
+
+      badge.style.display =
+      "none";
+
+    });
+
+    const unreadCounts = {};
+
     snapshot.forEach((docSnap)=>{
 
       const data =
       docSnap.data();
+
+      // UNREAD COUNTS
+
+      if(
+        data.receiver === currentUser.email &&
+        !data.seen
+      ){
+
+        if(
+          !unreadCounts[data.sender]
+        ){
+
+          unreadCounts[
+            data.sender
+          ] = 0;
+
+        }
+
+        unreadCounts[
+          data.sender
+        ]++;
+
+      }
 
       const c1 =
       data.sender === currentUser.email &&
@@ -80,9 +122,11 @@ function loadMessages(){
 
       if(c1 || c2){
 
+        // MARK SEEN
+
         if(
-          data.receiver === currentUser.email
-          && !data.seen
+          data.receiver === currentUser.email &&
+          !data.seen
         ){
 
           updateDoc(
@@ -144,6 +188,29 @@ function loadMessages(){
         `;
 
         chat.appendChild(div);
+
+      }
+
+    });
+
+    // SHOW BADGES
+
+    Object.keys(
+      unreadCounts
+    ).forEach((sender)=>{
+
+      const badge =
+      document.getElementById(
+        "unread-" + sender
+      );
+
+      if(badge){
+
+        badge.style.display =
+        "flex";
+
+        badge.innerText =
+        unreadCounts[sender];
 
       }
 
