@@ -37,13 +37,17 @@ async function loadUsers(){
     const data =
     docSnap.data();
 
+    // SKIP SELF
+
     if(
       currentUser &&
-      data.email !== currentUser.email
+      data.uid !== currentUser.uid
     ){
 
       const div =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
       div.className = "user";
 
@@ -51,9 +55,11 @@ async function loadUsers(){
 
         <img src="${data.photo}">
 
-        <div>
+        <div class="userInfo">
 
-          <div>${data.name}</div>
+          <div>
+            ${data.name}
+          </div>
 
           <div class="userEmail">
             @${data.username || "user"}
@@ -65,13 +71,21 @@ async function loadUsers(){
 
         </div>
 
+        <div class="unreadBadge"
+             id="unread-${data.uid}">
+        </div>
+
       `;
 
       const statusDiv =
-      div.querySelector(".status");
+      div.querySelector(
+        ".status"
+      );
 
       const statusRef =
-      listenUserStatus(data.uid);
+      listenUserStatus(
+        data.uid
+      );
 
       applyStatus(
         statusRef,
@@ -80,27 +94,44 @@ async function loadUsers(){
 
       div.onclick = ()=>{
 
-        if(window.innerWidth <= 768){
+        // MOBILE CHAT OPEN
 
-  document
-  .getElementById("sidebar")
-  .classList.add("hide");
+        if(
+          window.innerWidth <= 768
+        ){
 
-  document
-  .getElementById("chatArea")
-  .classList.add("active");
+          document
+          .getElementById(
+            "sidebar"
+          )
+          .classList.add(
+            "hide"
+          );
 
-}
+          document
+          .getElementById(
+            "chatArea"
+          )
+          .classList.add(
+            "active"
+          );
+
+        }
+
+        // SELECT USER
 
         setSelectedUser(data);
 
-        document.getElementById(
+        document
+        .getElementById(
           "chatUserName"
-        ).innerText =
+        )
+        .innerText =
         data.name;
 
         const headerStatus =
-        document.getElementById(
+        document
+        .getElementById(
           "chatUserStatus"
         );
 
@@ -109,11 +140,33 @@ async function loadUsers(){
           headerStatus
         );
 
+        // HIDE UNREAD BADGE
+
+        const badge =
+        document
+        .getElementById(
+
+          "unread-" +
+          data.uid
+
+        );
+
+        if(badge){
+
+          badge.style.display =
+          "none";
+
+        }
+
+        // LOAD CHAT
+
         loadMessages();
 
       };
 
-      usersList.appendChild(div);
+      usersList.appendChild(
+        div
+      );
 
     }
 
@@ -121,6 +174,11 @@ async function loadUsers(){
 
 }
 
-setTimeout(loadUsers,2000);
+setTimeout(
+  loadUsers,
+  2000
+);
 
-export { loadUsers };
+export {
+  loadUsers
+};
