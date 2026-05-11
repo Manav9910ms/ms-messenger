@@ -32,9 +32,9 @@ document.getElementById("sendBtn")
     collection(db,"messages"),
     {
 
-      sender:currentUser.email,
+      sender:currentUser.uid,
 
-      receiver:selectedUser.email,
+      receiver:selectedUser.uid,
 
       text:text,
 
@@ -92,7 +92,7 @@ function loadMessages(){
       // UNREAD COUNTS
 
       if(
-        data.receiver === currentUser.email &&
+        data.receiver === currentUser.uid &&
         !data.seen
       ){
 
@@ -113,19 +113,19 @@ function loadMessages(){
       }
 
       const c1 =
-      data.sender === currentUser.email &&
-      data.receiver === selectedUser.email;
+      data.sender === currentUser.uid &&
+      data.receiver === selectedUser.uid;
 
       const c2 =
-      data.sender === selectedUser.email &&
-      data.receiver === currentUser.email;
+      data.sender === selectedUser.uid &&
+      data.receiver === currentUser.uid;
 
       if(c1 || c2){
 
         // MARK SEEN
 
         if(
-          data.receiver === currentUser.email &&
+          data.receiver === currentUser.uid &&
           !data.seen
         ){
 
@@ -148,7 +148,7 @@ function loadMessages(){
         div.className =
         "message " +
         (
-          data.sender === currentUser.email
+          data.sender === currentUser.uid
           ? "me"
           : "other"
         );
@@ -165,7 +165,7 @@ function loadMessages(){
         let tick = "";
 
         if(
-          data.sender === currentUser.email
+          data.sender === currentUser.uid
         ){
 
           tick =
