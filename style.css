@@ -341,12 +341,36 @@ button{
   justify-content:center;
   align-items:center;
 
-  font-size:12px;
-  font-weight:bold;
-
   color:white;
 
-  margin-top:6px;
+  font-size:11px;
+  font-weight:bold;
+
+  flex-shrink:0;
+
+  margin-left:auto;
+
+}
+
+.userTop{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  width:100%;
+
+}
+
+.userInfo{
+
+  flex:1;
+
+  min-width:0;
 
 }
 
