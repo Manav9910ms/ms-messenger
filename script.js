@@ -10,6 +10,15 @@ import {
 
 import "./presence.js";
 
+if(
+  Notification.permission !==
+  "granted"
+){
+
+  Notification.requestPermission();
+
+}
+
 // LOAD USERS
 
 loadUsers();
