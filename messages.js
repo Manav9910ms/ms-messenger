@@ -34,6 +34,11 @@ document.getElementById("sendBtn")
 
       sender:currentUser.uid,
 
+      senderUsername:
+      document.getElementById(
+        "profileUsername"
+      ).innerText,
+
       receiver:selectedUser.uid,
 
       text:text,
@@ -162,7 +167,7 @@ function loadMessages(){
 
 }
 
-// LOAD UNREAD COUNTS
+// LOAD UNREAD COUNTS + NOTIFICATIONS
 
 function loadUnreadCounts(){
 
@@ -173,7 +178,7 @@ function loadUnreadCounts(){
 
   onSnapshot(q,(snapshot)=>{
 
-    // RESET ALL BADGES
+    // RESET BADGES
 
     document
     .querySelectorAll(
@@ -198,6 +203,8 @@ function loadUnreadCounts(){
         !data.seen
       ){
 
+        // COUNT
+
         if(
           !unreadCounts[data.sender]
         ){
@@ -211,6 +218,30 @@ function loadUnreadCounts(){
         unreadCounts[
           data.sender
         ]++;
+
+        // NOTIFICATION
+
+        if(
+          Notification.permission ===
+          "granted"
+        ){
+
+          new Notification(
+
+            data.senderUsername +
+            " messaged you",
+
+            {
+
+              body:data.text,
+
+              icon:"favicon.png"
+
+            }
+
+          );
+
+        }
 
       }
 
