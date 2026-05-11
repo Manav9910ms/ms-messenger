@@ -51,7 +51,7 @@ document.getElementById("sendBtn")
 
 };
 
-// LOAD MESSAGES
+// LOAD CHAT MESSAGES
 
 function loadMessages(){
 
@@ -69,48 +69,10 @@ function loadMessages(){
 
     chat.innerHTML = "";
 
-    // RESET BADGES
-
-    document
-    .querySelectorAll(
-      ".unreadBadge"
-    )
-    .forEach((badge)=>{
-
-      badge.style.display =
-      "none";
-
-    });
-
-    const unreadCounts = {};
-
     snapshot.forEach((docSnap)=>{
 
       const data =
       docSnap.data();
-
-      // UNREAD COUNTS
-
-      if(
-        data.receiver === currentUser.uid &&
-        !data.seen
-      ){
-
-        if(
-          !unreadCounts[data.sender]
-        ){
-
-          unreadCounts[
-            data.sender
-          ] = 0;
-
-        }
-
-        unreadCounts[
-          data.sender
-        ]++;
-
-      }
 
       const c1 =
       data.sender === currentUser.uid &&
@@ -122,7 +84,7 @@ function loadMessages(){
 
       if(c1 || c2){
 
-        // MARK SEEN
+        // MARK AS SEEN
 
         if(
           data.receiver === currentUser.uid &&
@@ -158,8 +120,8 @@ function loadMessages(){
 
         const time =
         date.toLocaleTimeString([],{
-          hour:'2-digit',
-          minute:'2-digit'
+          hour:"2-digit",
+          minute:"2-digit"
         });
 
         let tick = "";
@@ -193,6 +155,67 @@ function loadMessages(){
 
     });
 
+    chat.scrollTop =
+    chat.scrollHeight;
+
+  });
+
+}
+
+// LOAD UNREAD COUNTS
+
+function loadUnreadCounts(){
+
+  const q = query(
+    collection(db,"messages"),
+    orderBy("time")
+  );
+
+  onSnapshot(q,(snapshot)=>{
+
+    // RESET ALL BADGES
+
+    document
+    .querySelectorAll(
+      ".unreadBadge"
+    )
+    .forEach((badge)=>{
+
+      badge.style.display =
+      "none";
+
+    });
+
+    const unreadCounts = {};
+
+    snapshot.forEach((docSnap)=>{
+
+      const data =
+      docSnap.data();
+
+      if(
+        data.receiver === currentUser.uid &&
+        !data.seen
+      ){
+
+        if(
+          !unreadCounts[data.sender]
+        ){
+
+          unreadCounts[
+            data.sender
+          ] = 0;
+
+        }
+
+        unreadCounts[
+          data.sender
+        ]++;
+
+      }
+
+    });
+
     // SHOW BADGES
 
     Object.keys(
@@ -216,11 +239,11 @@ function loadMessages(){
 
     });
 
-    chat.scrollTop =
-    chat.scrollHeight;
-
   });
 
 }
 
-export { loadMessages };
+export {
+  loadMessages,
+  loadUnreadCounts
+};
