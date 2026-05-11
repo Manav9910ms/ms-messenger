@@ -43,6 +43,8 @@ document.getElementById(
   "logoutBtn"
 ).style.display = "none";
 
+// LOGIN
+
 document.getElementById("loginBtn")
 .onclick = async ()=>{
 
@@ -54,6 +56,8 @@ document.getElementById("loginBtn")
   location.reload();
 
 };
+
+// LOGOUT
 
 document.getElementById("logoutBtn")
 .onclick = async ()=>{
@@ -83,6 +87,8 @@ document.getElementById("logoutBtn")
 
 };
 
+// AUTH STATE
+
 onAuthStateChanged(
 auth,
 async(user)=>{
@@ -100,14 +106,21 @@ async(user)=>{
     ).style.display = "block";
 
     const userRef =
-    doc(db,"users",user.uid);
+    doc(
+      db,
+      "users",
+      user.uid
+    );
 
     const userSnap =
     await getDoc(userRef);
 
-    // NEW USER
+    // NEW USER OR NO USERNAME
 
-    if(!userSnap.exists()){
+    if(
+      !userSnap.exists() ||
+      !userSnap.data().username
+    ){
 
       usernamePage.classList.add(
         "active"
@@ -123,6 +136,9 @@ async(user)=>{
 
         username =
         username.replace("@","");
+
+        username =
+        username.replace(/\s+/g,'');
 
         if(username.length < 3){
 
@@ -181,6 +197,10 @@ async(user)=>{
           {
             uid:user.uid
           }
+        );
+
+        alert(
+          "Username created successfully"
         );
 
         usernamePage.classList.remove(
