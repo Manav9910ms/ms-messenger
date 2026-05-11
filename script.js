@@ -8,6 +8,10 @@ import {
   loadUnreadCounts
 } from "./messages.js";
 
+import {
+  clearSelectedUser
+} from "./firebase.js";
+
 import "./presence.js";
 
 // LOAD USERS
@@ -33,6 +37,12 @@ if(backBtn){
 
   backBtn.onclick = ()=>{
 
+    // CLEAR ACTIVE CHAT
+
+    clearSelectedUser();
+
+    // SHOW SIDEBAR
+
     document
     .getElementById(
       "sidebar"
@@ -40,6 +50,8 @@ if(backBtn){
     .classList.remove(
       "hide"
     );
+
+    // HIDE CHAT
 
     document
     .getElementById(
