@@ -14,15 +14,21 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-document.getElementById("sendBtn")
-.onclick = async ()=>{
+// SEND MESSAGE
+
+document.getElementById(
+  "sendBtn"
+).onclick = async ()=>{
 
   if(!selectedUser) return;
 
-  const text =
+  const input =
   document.getElementById(
     "messageInput"
-  ).value;
+  );
+
+  const text =
+  input.value.trim();
 
   if(text === "") return;
 
@@ -30,9 +36,16 @@ document.getElementById("sendBtn")
     collection(db,"messages"),
     {
 
-      sender:currentUser.email,
+      senderUid:
+      currentUser.uid,
 
-      receiver:selectedUser.email,
+      receiverUid:
+      selectedUser.uid,
+
+      senderUsername:
+      document.getElementById(
+        "profileUsername"
+      ).innerText,
 
       text:text,
 
@@ -43,11 +56,11 @@ document.getElementById("sendBtn")
     }
   );
 
-  document.getElementById(
-    "messageInput"
-  ).value = "";
+  input.value = "";
 
 };
+
+// LOAD CHAT
 
 function loadMessages(){
 
@@ -71,18 +84,28 @@ function loadMessages(){
       docSnap.data();
 
       const c1 =
-      data.sender === currentUser.email &&
-      data.receiver === selectedUser.email;
+      data.senderUid ===
+      currentUser.uid &&
+
+      data.receiverUid ===
+      selectedUser.uid;
 
       const c2 =
-      data.sender === selectedUser.email &&
-      data.receiver === currentUser.email;
+      data.senderUid ===
+      selectedUser.uid &&
+
+      data.receiverUid ===
+      currentUser.uid;
 
       if(c1 || c2){
 
+        // MARK AS SEEN
+
         if(
-          data.receiver === currentUser.email
-          && !data.seen
+          data.receiverUid ===
+          currentUser.uid &&
+
+          !data.seen
         ){
 
           updateDoc(
@@ -99,13 +122,19 @@ function loadMessages(){
         }
 
         const div =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
         div.className =
         "message " +
+
         (
-          data.sender === currentUser.email
+          data.senderUid ===
+          currentUser.uid
+
           ? "me"
+
           : "other"
         );
 
@@ -114,14 +143,18 @@ function loadMessages(){
 
         const time =
         date.toLocaleTimeString([],{
-          hour:'2-digit',
-          minute:'2-digit'
+
+          hour:"2-digit",
+
+          minute:"2-digit"
+
         });
 
         let tick = "";
 
         if(
-          data.sender === currentUser.email
+          data.senderUid ===
+          currentUser.uid
         ){
 
           tick =
@@ -156,4 +189,102 @@ function loadMessages(){
 
 }
 
-export { loadMessages };
+// LOAD UNREAD COUNTS
+
+function loadUnreadCounts(){
+
+  const q = query(
+    collection(db,"messages"),
+    orderBy("time")
+  );
+
+  onSnapshot(q,(snapshot)=>{
+
+    // RESET BADGES
+
+    document
+    .querySelectorAll(
+      ".unreadBadge"
+    )
+    .forEach((badge)=>{
+
+      badge.style.display =
+      "none";
+
+    });
+
+    const unreadCounts = {};
+
+    snapshot.forEach((docSnap)=>{
+
+      const data =
+      docSnap.data();
+
+      if(
+
+        data.receiverUid ===
+        currentUser.uid &&
+
+        !data.seen
+
+      ){
+
+        if(
+          !unreadCounts[
+            data.senderUid
+          ]
+        ){
+
+          unreadCounts[
+            data.senderUid
+          ] = 0;
+
+        }
+
+        unreadCounts[
+          data.senderUid
+        ]++;
+
+      }
+
+    });
+
+    // SHOW BADGES
+
+    Object.keys(
+      unreadCounts
+    ).forEach((senderUid)=>{
+
+      const badge =
+      document.getElementById(
+
+        "unread-" +
+        senderUid
+
+      );
+
+      if(badge){
+
+        badge.style.display =
+        "flex";
+
+        badge.innerText =
+        unreadCounts[
+          senderUid
+        ];
+
+      }
+
+    });
+
+  });
+
+}
+
+export {
+
+  loadMessages,
+
+  loadUnreadCounts
+
+};
