@@ -176,6 +176,38 @@ button{
   background:#0d1320;
   border-bottom:1px solid #1f2a44;
   flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.chatHeaderMain{
+  min-width:0;
+}
+
+.callActions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+#voiceCallBtn,
+#videoCallBtn,
+#endCallBtn{
+  margin-bottom:0;
+  padding:10px 12px;
+  font-size:13px;
+}
+
+#voiceCallBtn:disabled,
+#videoCallBtn:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+}
+
+.dangerBtn{
+  background:linear-gradient(45deg,#ff4d4d,#c61515);
 }
 
 #chatUserName{
@@ -195,6 +227,37 @@ button{
   overflow-y:auto;
   overflow-x:hidden;
   min-height:0;
+}
+
+.videoPanel{
+  display:none;
+  position:relative;
+  background:#060913;
+  border-bottom:1px solid #1f2a44;
+  height:220px;
+}
+
+.videoPanel.active{
+  display:block;
+}
+
+#remoteVideo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  background:#000;
+}
+
+#localVideo{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  width:120px;
+  height:80px;
+  object-fit:cover;
+  border:2px solid #00c3ff;
+  border-radius:8px;
+  background:#000;
 }
 
 /* MESSAGE */
@@ -369,6 +432,50 @@ button{
 
 }
 
+.incomingCallModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9998;
+  padding:20px;
+}
+
+.incomingCallModal.active{
+  display:flex;
+}
+
+.incomingCallCard{
+  width:100%;
+  max-width:380px;
+  background:#121a2b;
+  border:1px solid #1f2a44;
+  border-radius:18px;
+  padding:22px;
+}
+
+.incomingCallCard h2{
+  color:#00c3ff;
+  margin-bottom:8px;
+}
+
+.incomingCallCard p{
+  opacity:0.9;
+  margin-bottom:16px;
+}
+
+.incomingCallActions{
+  display:flex;
+  gap:10px;
+}
+
+.incomingCallActions button{
+  margin-bottom:0;
+  flex:1;
+}
+
 /* BACK BUTTON */
 
 #backBtn{
@@ -443,6 +550,7 @@ button{
 
   #chatHeader{
     padding:15px;
+    gap:8px;
   }
 
   #chatUserName{
@@ -488,6 +596,30 @@ button{
   #sendBtn{
     width:90px;
     font-size:14px;
+  }
+
+  .callActions{
+    flex-direction:column;
+    align-items:flex-end;
+  }
+
+  #voiceCallBtn,
+  #videoCallBtn,
+  #endCallBtn{
+    width:95px;
+    padding:8px;
+    font-size:12px;
+  }
+
+  .videoPanel{
+    height:180px;
+  }
+
+  #localVideo{
+    width:96px;
+    height:68px;
+    right:8px;
+    bottom:8px;
   }
 
 }

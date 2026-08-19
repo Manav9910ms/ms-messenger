@@ -19,6 +19,9 @@ import {
 } from "./messages.js";
 
 async function loadUsers(){
+  if(!currentUser){
+    return;
+  }
 
   const usersList =
   document.getElementById(
@@ -51,36 +54,47 @@ async function loadUsers(){
 
       div.className = "user";
 
-      div.innerHTML = `
+      const img =
+      document.createElement("img");
+      img.alt = "User";
+      if(typeof data.photo === "string"){
+        img.src = data.photo;
+      }
 
-        <img src="${data.photo}">
+      const info =
+      document.createElement("div");
+      info.className = "userInfo";
 
-        <div class="userInfo">
+      const nameDiv =
+      document.createElement("div");
+      nameDiv.innerText =
+      data.name || "User";
 
-          <div>
-            ${data.name}
-          </div>
-
-          <div class="userEmail">
-            @${data.username || "user"}
-          </div>
-
-          <div class="status"
-               id="status-${data.uid}">
-          </div>
-
-        </div>
-
-        <div class="unreadBadge"
-             id="unread-${data.uid}">
-        </div>
-
-      `;
+      const usernameDiv =
+      document.createElement("div");
+      usernameDiv.className = "userEmail";
+      usernameDiv.innerText =
+      "@" + (data.username || "user");
 
       const statusDiv =
-      div.querySelector(
-        ".status"
-      );
+      document.createElement("div");
+      statusDiv.className = "status";
+      statusDiv.id = "status-" + data.uid;
+
+      info.appendChild(nameDiv);
+      info.appendChild(usernameDiv);
+      info.appendChild(statusDiv);
+
+      const unreadDiv =
+      document.createElement("div");
+      unreadDiv.className =
+      "unreadBadge";
+      unreadDiv.id =
+      "unread-" + data.uid;
+
+      div.appendChild(img);
+      div.appendChild(info);
+      div.appendChild(unreadDiv);
 
       const statusRef =
       listenUserStatus(
@@ -121,6 +135,14 @@ async function loadUsers(){
         // SELECT USER
 
         setSelectedUser(data);
+        window.dispatchEvent(
+          new CustomEvent(
+            "selected-user-changed",
+            {
+              detail: data
+            }
+          )
+        );
 
         document
         .getElementById(
@@ -173,11 +195,6 @@ async function loadUsers(){
   });
 
 }
-
-setTimeout(
-  loadUsers,
-  2000
-);
 
 export {
   loadUsers

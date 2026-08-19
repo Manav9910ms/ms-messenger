@@ -9,6 +9,11 @@ import {
 } from "./messages.js";
 
 import {
+  initVoiceCalls,
+  cleanupStaleCalls
+} from "./calls.js";
+
+import {
   clearSelectedUser
 } from "./firebase.js";
 
@@ -17,6 +22,8 @@ import "./presence.js";
 // LOAD USERS
 
 loadUsers();
+setTimeout(loadUsers,1500);
+setTimeout(cleanupStaleCalls,3000);
 
 // LOAD UNREADS
 
@@ -25,6 +32,8 @@ setTimeout(()=>{
   loadUnreadCounts();
 
 },2000);
+
+initVoiceCalls();
 
 // MOBILE BACK BUTTON
 
@@ -72,43 +81,47 @@ document.getElementById(
   "searchInput"
 );
 
-searchInput.addEventListener(
-  "input",
-  ()=>{
+if(searchInput){
 
-    const value =
-    searchInput.value
-    .toLowerCase();
+  searchInput.addEventListener(
+    "input",
+    ()=>{
 
-    const users =
-    document.querySelectorAll(
-      ".user"
-    );
-
-    users.forEach((user)=>{
-
-      const text =
-      user.innerText
+      const value =
+      searchInput.value
       .toLowerCase();
 
-      if(
-        text.includes(value)
-      ){
+      const users =
+      document.querySelectorAll(
+        ".user"
+      );
 
-        user.style.display =
-        "flex";
+      users.forEach((user)=>{
 
-      }else{
+        const text =
+        user.innerText
+        .toLowerCase();
 
-        user.style.display =
-        "none";
+        if(
+          text.includes(value)
+        ){
 
-      }
+          user.style.display =
+          "flex";
 
-    });
+        }else{
 
-  }
-);
+          user.style.display =
+          "none";
+
+        }
+
+      });
+
+    }
+  );
+
+}
 
 // PWA SERVICE WORKER
 

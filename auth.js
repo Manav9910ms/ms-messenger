@@ -48,12 +48,17 @@ document.getElementById(
 document.getElementById("loginBtn")
 .onclick = async ()=>{
 
-  await signInWithPopup(
-    auth,
-    provider
-  );
-
-  location.reload();
+  try{
+    await signInWithPopup(
+      auth,
+      provider
+    );
+  }catch(error){
+    console.error(
+      "Login failed:",
+      error
+    );
+  }
 
 };
 
@@ -252,7 +257,7 @@ if(
 
     document.getElementById(
       "profilePic"
-    ).src = user.photoURL;
+    ).src = user.photoURL || "favicon.png";
 
     document.getElementById(
       "profileName"
@@ -297,6 +302,10 @@ if(
     document.getElementById(
       "logoutBtn"
     ).style.display = "none";
+
+    document.getElementById(
+      "profilePic"
+    ).src = "favicon.png";
 
   }
 

@@ -14,13 +14,14 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// SEND MESSAGE
+let unsubscribeChat = null;
+let unsubscribeUnread = null;
 
 document.getElementById(
   "sendBtn"
 ).onclick = async ()=>{
 
-  if(!selectedUser) return;
+  if(!selectedUser || !currentUser) return;
 
   const input =
   document.getElementById(
@@ -35,24 +36,15 @@ document.getElementById(
   await addDoc(
     collection(db,"messages"),
     {
-
-      senderUid:
-      currentUser.uid,
-
-      receiverUid:
-      selectedUser.uid,
-
+      senderUid: currentUser.uid,
+      receiverUid: selectedUser.uid,
       senderUsername:
       document.getElementById(
         "profileUsername"
       ).innerText,
-
-      text:text,
-
-      time:Date.now(),
-
-      seen:false
-
+      text: text,
+      time: Date.now(),
+      seen: false
     }
   );
 
@@ -60,16 +52,21 @@ document.getElementById(
 
 };
 
-// LOAD CHAT
-
 function loadMessages(){
+  if(!currentUser || !selectedUser){
+    return;
+  }
+
+  if(typeof unsubscribeChat === "function"){
+    unsubscribeChat();
+  }
 
   const q = query(
     collection(db,"messages"),
     orderBy("time")
   );
 
-  onSnapshot(q,(snapshot)=>{
+  unsubscribeChat = onSnapshot(q,(snapshot)=>{
 
     const chat =
     document.getElementById(
@@ -83,42 +80,27 @@ function loadMessages(){
       const data =
       docSnap.data();
 
-      // SKIP OLD EMAIL MESSAGES
-
       if(
         !data.senderUid ||
         !data.receiverUid
       ){
-
         return;
-
       }
 
       const c1 =
-      data.senderUid ===
-      currentUser.uid &&
-
-      data.receiverUid ===
-      selectedUser.uid;
+      data.senderUid === currentUser.uid &&
+      data.receiverUid === selectedUser.uid;
 
       const c2 =
-      data.senderUid ===
-      selectedUser.uid &&
-
-      data.receiverUid ===
-      currentUser.uid;
+      data.senderUid === selectedUser.uid &&
+      data.receiverUid === currentUser.uid;
 
       if(c1 || c2){
 
-        // MARK AS SEEN
-
         if(
-          data.receiverUid ===
-          currentUser.uid &&
-
+          data.receiverUid === currentUser.uid &&
           !data.seen
         ){
-
           updateDoc(
             doc(
               db,
@@ -126,10 +108,9 @@ function loadMessages(){
               docSnap.id
             ),
             {
-              seen:true
+              seen: true
             }
           );
-
         }
 
         const div =
@@ -139,13 +120,9 @@ function loadMessages(){
 
         div.className =
         "message " +
-
         (
-          data.senderUid ===
-          currentUser.uid
-
+          data.senderUid === currentUser.uid
           ? "me"
-
           : "other"
         );
 
@@ -154,38 +131,31 @@ function loadMessages(){
 
         const time =
         date.toLocaleTimeString([],{
-
           hour:"2-digit",
-
           minute:"2-digit"
-
         });
 
         let tick = "";
 
-        if(
-          data.senderUid ===
-          currentUser.uid
-        ){
-
-          tick =
-          data.seen
-          ? "✓✓"
-          : "✓";
-
+        if(data.senderUid === currentUser.uid){
+          tick = data.seen
+          ? "seen"
+          : "sent";
         }
 
-        div.innerHTML = `
+        const textDiv =
+        document.createElement("div");
+        textDiv.innerText =
+        data.text || "";
 
-          <div>
-            ${data.text}
-          </div>
+        const timeDiv =
+        document.createElement("div");
+        timeDiv.className = "time";
+        timeDiv.innerText =
+        time + (tick ? " " + tick : "");
 
-          <div class="time">
-            ${time} ${tick}
-          </div>
-
-        `;
+        div.appendChild(textDiv);
+        div.appendChild(timeDiv);
 
         chat.appendChild(div);
 
@@ -200,28 +170,29 @@ function loadMessages(){
 
 }
 
-// LOAD UNREAD COUNTS
-
 function loadUnreadCounts(){
+  if(!currentUser){
+    return;
+  }
+
+  if(typeof unsubscribeUnread === "function"){
+    unsubscribeUnread();
+  }
 
   const q = query(
     collection(db,"messages"),
     orderBy("time")
   );
 
-  onSnapshot(q,(snapshot)=>{
-
-    // RESET BADGES
+  unsubscribeUnread = onSnapshot(q,(snapshot)=>{
 
     document
     .querySelectorAll(
       ".unreadBadge"
     )
     .forEach((badge)=>{
-
       badge.style.display =
       "none";
-
     });
 
     const unreadCounts = {};
@@ -231,70 +202,39 @@ function loadUnreadCounts(){
       const data =
       docSnap.data();
 
-      // SKIP OLD EMAIL MESSAGES
-
       if(
         !data.senderUid ||
         !data.receiverUid
       ){
-
         return;
-
       }
 
       if(
-
-        data.receiverUid ===
-        currentUser.uid &&
-
+        data.receiverUid === currentUser.uid &&
         !data.seen
-
       ){
-
-        if(
-          !unreadCounts[
-            data.senderUid
-          ]
-        ){
-
-          unreadCounts[
-            data.senderUid
-          ] = 0;
-
+        if(!unreadCounts[data.senderUid]){
+          unreadCounts[data.senderUid] = 0;
         }
 
-        unreadCounts[
-          data.senderUid
-        ]++;
-
+        unreadCounts[data.senderUid]++;
       }
 
     });
 
-    // SHOW BADGES
-
-    Object.keys(
-      unreadCounts
-    ).forEach((senderUid)=>{
+    Object.keys(unreadCounts).forEach((senderUid)=>{
 
       const badge =
       document.getElementById(
-
-        "unread-" +
-        senderUid
-
+        "unread-" + senderUid
       );
 
       if(badge){
-
         badge.style.display =
         "flex";
 
         badge.innerText =
-        unreadCounts[
-          senderUid
-        ];
-
+        unreadCounts[senderUid];
       }
 
     });
@@ -304,9 +244,6 @@ function loadUnreadCounts(){
 }
 
 export {
-
   loadMessages,
-
   loadUnreadCounts
-
 };

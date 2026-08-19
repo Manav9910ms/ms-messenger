@@ -35,16 +35,19 @@ export function applyStatus(
 
     if(status && status.online){
 
-      element.innerHTML =
-      "🟢 Online";
+      element.innerText =
+      "Online";
 
     }else if(status){
 
-      element.innerHTML =
-      "⚫ " +
+      element.innerText =
       formatLastSeen(
         status.lastSeen
       );
+
+    }else{
+
+      element.innerText = "";
 
     }
 
