@@ -13,300 +13,204 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  setDoc,
   doc,
-  getDoc
+  getDoc,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   ref,
   set,
-  onDisconnect
+  onDisconnect,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const usernamePage =
-document.getElementById(
-  "usernamePage"
-);
+import { showToast } from "./utils.js";
 
-const usernameInput =
-document.getElementById(
-  "usernameInput"
-);
+const usernamePage = document.getElementById("usernamePage");
+const usernameInput = document.getElementById("usernameInput");
+const saveUsernameBtn = document.getElementById("saveUsernameBtn");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const profilePic = document.getElementById("profilePic");
+const profileName = document.getElementById("profileName");
+const profileUsername = document.getElementById("profileUsername");
 
-const saveUsernameBtn =
-document.getElementById(
-  "saveUsernameBtn"
-);
-
-document.getElementById(
-  "logoutBtn"
-).style.display = "none";
-
-// LOGIN
-
-document.getElementById("loginBtn")
-.onclick = async ()=>{
-
-  try{
-    await signInWithPopup(
-      auth,
-      provider
-    );
-  }catch(error){
-    console.error(
-      "Login failed:",
-      error
-    );
-  }
-
-};
-
-// LOGOUT
-
-document.getElementById("logoutBtn")
-.onclick = async ()=>{
-
-  const user = auth.currentUser;
-
-  if(user){
-
-    const statusRef =
-    ref(
-      realtimeDb,
-      "status/" + user.uid
-    );
-
-    await set(statusRef,{
-      online:false,
-      lastSeen:Date.now()
-    });
-
-  }
-
-  await signOut(auth);
-
-  alert("Logout Successfully");
-
-  location.reload();
-
-};
-
-// AUTH STATE
-
-onAuthStateChanged(
-auth,
-async(user)=>{
-
-  if(user){
-
-    setCurrentUser(user);
-
-    document.getElementById(
-      "loginBtn"
-    ).style.display = "none";
-
-    document.getElementById(
-      "logoutBtn"
-    ).style.display = "block";
-
-    const userRef =
-    doc(
-      db,
-      "users",
-      user.uid
-    );
-
-    const userSnap =
-    await getDoc(userRef);
-
-    // NEW USER OR NO USERNAME
-
-    if(
-      !userSnap.exists() ||
-      !userSnap.data().username
-    ){
-
-      usernamePage.classList.add(
-        "active"
-      );
-
-      saveUsernameBtn.onclick =
-      async ()=>{
-
-        let username =
-        usernameInput.value
-        .trim()
-        .toLowerCase();
-
-        username =
-        username.replace("@","");
-
-        username =
-        username.replace(/\s+/g,'');
-
-        if(username.length < 3){
-
-  alert(
-    "Username too short"
-  );
-
-  return;
-
+function setLoggedInUi(isLoggedIn) {
+  loginBtn.style.display = isLoggedIn ? "none" : "block";
+  logoutBtn.style.display = isLoggedIn ? "block" : "none";
 }
 
-// ONLY a-z A-Z 0-9 . _
-
-const validUsername =
-/^[a-zA-Z0-9._]+$/;
-
-if(
-  !validUsername.test(username)
-){
-
-  alert(
-    "Only letters, numbers, dot(.) and underscore(_) allowed"
-  );
-
-  return;
-
+function normalizeUsername(value) {
+  return value.trim().toLowerCase().replace(/^@+/, "");
 }
 
-        // CHECK USERNAME EXISTS
+function validateUsername(username) {
+  if (username.length < 3 || username.length > 20) {
+    return "Username must be 3–20 characters.";
+  }
 
-        const usernameRef =
-        doc(
-          db,
-          "usernames",
-          username
-        );
+  if (!/^[a-z0-9._]+$/.test(username)) {
+    return "Use only letters, numbers, dot (.) and underscore (_).";
+  }
 
-        const usernameSnap =
-        await getDoc(
-          usernameRef
-        );
+  return null;
+}
 
-        if(usernameSnap.exists()){
+function updateProfileUi(user, profile) {
+  profilePic.src = user.photoURL || "favicon.png";
+  profileName.textContent = user.displayName || "User";
+  profileUsername.textContent = `@${profile?.username || "user"}`;
+}
 
-          alert(
-            "Username already taken"
-          );
+async function updatePresence(user, online) {
+  const statusRef = ref(realtimeDb, `status/${user.uid}`);
 
-          return;
-
-        }
-
-        // SAVE USER
-
-        await setDoc(userRef,{
-
-          uid:user.uid,
-
-          name:user.displayName,
-
-          username:username,
-
-          email:user.email,
-
-          photo:user.photoURL
-
-        });
-
-        // RESERVE USERNAME
-
-        await setDoc(
-          usernameRef,
-          {
-            uid:user.uid
-          }
-        );
-
-        alert(
-          "Username created successfully"
-        );
-
-        usernamePage.classList.remove(
-          "active"
-        );
-
-        location.reload();
-
-      };
-
-      return;
-
-    }else{
-
-      // UPDATE EXISTING USER
-
-      await setDoc(userRef,{
-
-        ...userSnap.data(),
-
-        name:user.displayName,
-
-        email:user.email,
-
-        photo:user.photoURL
-
-      });
-
-    }
-
-    // PROFILE UI
-
-    document.getElementById(
-      "profilePic"
-    ).src = user.photoURL || "favicon.png";
-
-    document.getElementById(
-      "profileName"
-    ).innerText =
-    user.displayName;
-
-    document.getElementById(
-      "profileUsername"
-    ).innerText =
-    "@" + (
-      userSnap.data().username ||
-      "user"
-    );
-
-    // ONLINE STATUS
-
-    const statusRef =
-    ref(
-      realtimeDb,
-      "status/" + user.uid
-    );
-
-    await set(statusRef,{
-      online:true,
-      lastSeen:Date.now()
+  if (online) {
+    await set(statusRef, {
+      online: true,
+      lastSeen: serverTimestamp()
     });
 
     onDisconnect(statusRef).set({
-
-      online:false,
-
-      lastSeen:Date.now()
-
+      online: false,
+      lastSeen: serverTimestamp()
     });
-
-  }else{
-
-    document.getElementById(
-      "loginBtn"
-    ).style.display = "block";
-
-    document.getElementById(
-      "logoutBtn"
-    ).style.display = "none";
-
-    document.getElementById(
-      "profilePic"
-    ).src = "favicon.png";
-
+    return;
   }
 
+  await set(statusRef, {
+    online: false,
+    lastSeen: serverTimestamp()
+  });
+}
+
+loginBtn.addEventListener("click", async () => {
+  loginBtn.disabled = true;
+
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error("Login failed:", error);
+    showToast("Unable to sign in. Please try again.", "error");
+  } finally {
+    loginBtn.disabled = false;
+  }
+});
+
+logoutBtn.addEventListener("click", async () => {
+  logoutBtn.disabled = true;
+
+  try {
+    if (auth.currentUser) {
+      await updatePresence(auth.currentUser, false);
+    }
+
+    await signOut(auth);
+  } catch (error) {
+    console.error("Logout failed:", error);
+    showToast("Unable to log out. Please try again.", "error");
+  } finally {
+    logoutBtn.disabled = false;
+  }
+});
+
+saveUsernameBtn.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const username = normalizeUsername(usernameInput.value);
+  const validationError = validateUsername(username);
+
+  if (validationError) {
+    showToast(validationError, "error");
+    return;
+  }
+
+  saveUsernameBtn.disabled = true;
+
+  try {
+    const userRef = doc(db, "users", user.uid);
+    const usernameRef = doc(db, "usernames", username);
+    const profile = {
+      uid: user.uid,
+      name: user.displayName || "User",
+      username,
+      email: user.email || "",
+      photo: user.photoURL || ""
+    };
+
+    await runTransaction(db, async (transaction) => {
+      const existingUsername = await transaction.get(usernameRef);
+
+      if (existingUsername.exists()) {
+        throw new Error("USERNAME_TAKEN");
+      }
+
+      transaction.set(userRef, profile, { merge: true });
+      transaction.create(usernameRef, { uid: user.uid });
+    });
+
+    usernamePage.classList.remove("active");
+    updateProfileUi(user, profile);
+    showToast("Username created successfully.", "success");
+    window.dispatchEvent(new CustomEvent("ms-profile-ready", {
+      detail: { user, profile }
+    }));
+  } catch (error) {
+    console.error("Username creation failed:", error);
+
+    if (error.message === "USERNAME_TAKEN") {
+      showToast("That username is already taken.", "error");
+    } else {
+      showToast("Unable to create username. Please try again.", "error");
+    }
+  } finally {
+    saveUsernameBtn.disabled = false;
+  }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  setCurrentUser(user);
+
+  if (!user) {
+    setLoggedInUi(false);
+    profilePic.src = "favicon.png";
+    profileName.textContent = "Guest";
+    profileUsername.textContent = "@username";
+    usernamePage.classList.remove("active");
+    window.dispatchEvent(new CustomEvent("ms-auth-ready", {
+      detail: { user: null, profile: null }
+    }));
+    return;
+  }
+
+  setLoggedInUi(true);
+
+  try {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    const profile = userSnap.exists() ? userSnap.data() : null;
+
+    if (!profile?.username) {
+      usernamePage.classList.add("active");
+      usernameInput.value = "";
+      usernameInput.focus();
+
+      window.dispatchEvent(new CustomEvent("ms-auth-ready", {
+        detail: { user, profile: null }
+      }));
+      return;
+    }
+
+    updateProfileUi(user, profile);
+    await updatePresence(user, true);
+
+    window.dispatchEvent(new CustomEvent("ms-auth-ready", {
+      detail: { user, profile }
+    }));
+  } catch (error) {
+    console.error("Auth initialization failed:", error);
+    showToast("Unable to load your account. Please refresh.", "error");
+  }
 });
