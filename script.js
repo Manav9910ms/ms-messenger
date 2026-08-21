@@ -17,26 +17,26 @@ import {
   cleanupStaleCalls
 } from "./calls.js";
 
-import {
-  clearSelectedUser
-} from "./firebase.js";
-
+import { clearSelectedUser } from "./firebase.js";
 import { showToast } from "./utils.js";
 
 const sidebar = document.getElementById("sidebar");
 const chatArea = document.getElementById("chatArea");
 const backBtn = document.getElementById("backBtn");
 const searchInput = document.getElementById("searchInput");
+const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendBtn");
 
 function closeChat() {
   clearSelectedUser();
   stopMessages();
   sidebar?.classList.remove("hide");
   chatArea?.classList.remove("active");
-  document.getElementById("chatUserName").textContent = "Select User";
-  document.getElementById("chatUserStatus").textContent = "";
+
+  const chatName = document.getElementById("chatUserName");
+  const chatStatus = document.getElementById("chatUserStatus");
+  if (chatName) chatName.textContent = "Select User";
+  if (chatStatus) chatStatus.textContent = "";
 }
 
 backBtn?.addEventListener("click", closeChat);
@@ -45,17 +45,13 @@ searchInput?.addEventListener("input", () => {
   filterUsers(searchInput.value);
 });
 
-sendBtn?.addEventListener("click", sendMessage);
-
-messageInput?.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    void sendMessage();
-  }
+messageForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  void sendMessage();
 });
 
-window.addEventListener("ms-auth-ready", async (event) => {
-  const { user, profile } = event.detail;
+window.addEventListener("ms-auth-ready", async ({ detail }) => {
+  const { user, profile } = detail || {};
 
   if (!user || !profile?.username) {
     clearUserState();
@@ -68,15 +64,15 @@ window.addEventListener("ms-auth-ready", async (event) => {
   void cleanupStaleCalls();
 });
 
-window.addEventListener("ms-profile-ready", async (event) => {
-  if (!event.detail?.user || !event.detail?.profile) return;
+window.addEventListener("ms-profile-ready", async ({ detail }) => {
+  if (!detail?.user || !detail?.profile) return;
 
   await loadUsers();
   loadUnreadCounts();
 });
 
 window.addEventListener("selected-user-changed", () => {
-  document.getElementById("messageInput")?.focus();
+  messageInput?.focus();
 });
 
 initCalls();
@@ -102,5 +98,5 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 
 if (window.location.protocol === "http:" && window.location.hostname !== "localhost") {
-  showToast("Use HTTPS for microphone, camera and PWA features.", "error");
+  showToast("HTTPS is required for microphone, camera and PWA features.", "error");
 }
