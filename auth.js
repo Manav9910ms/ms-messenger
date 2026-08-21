@@ -8,6 +8,7 @@ import {
 
 import {
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -85,14 +86,51 @@ async function updatePresence(user, online) {
   });
 }
 
+function getLoginErrorMessage(error) {
+  const code = error?.code || "";
+
+  switch (code) {
+    case "auth/unauthorized-domain":
+      return "Google sign-in is blocked because this website domain is not authorized in Firebase Authentication. Add manav9910ms.github.io under Authentication → Settings → Authorized domains.";
+    case "auth/popup-blocked":
+      return "Your browser blocked the Google sign-in popup. Redirecting to Google sign-in…";
+    case "auth/popup-closed-by-user":
+      return "Google sign-in was closed before it finished.";
+    case "auth/cancelled-popup-request":
+      return "A Google sign-in request is already in progress.";
+    case "auth/operation-not-allowed":
+      return "Google Sign-In is not enabled in Firebase Authentication.";
+    case "auth/network-request-failed":
+      return "Network error while connecting to Google Sign-In. Check your internet connection.";
+    default:
+      return "Unable to sign in with Google. Check the browser console for the Firebase error.";
+  }
+}
+
 loginBtn.addEventListener("click", async () => {
   loginBtn.disabled = true;
 
   try {
     await signInWithPopup(auth, provider);
   } catch (error) {
-    console.error("Login failed:", error);
-    showToast("Unable to sign in. Please try again.", "error");
+    console.error("Google login failed:", {
+      code: error?.code,
+      message: error?.message,
+      customData: error?.customData
+    });
+
+    if (error?.code === "auth/popup-blocked") {
+      showToast(getLoginErrorMessage(error), "error");
+      try {
+        await signInWithRedirect(auth, provider);
+        return;
+      } catch (redirectError) {
+        console.error("Google redirect login failed:", redirectError);
+        showToast(getLoginErrorMessage(redirectError), "error");
+      }
+    } else {
+      showToast(getLoginErrorMessage(error), "error");
+    }
   } finally {
     loginBtn.disabled = false;
   }
