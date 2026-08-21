@@ -1,38 +1,32 @@
 import {
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
   db,
   currentUser,
   selectedUser
 } from "./firebase.js";
-
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  writeBatch,
-  doc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { showToast } from "./utils.js";
 
 let unsubscribeChatA = null;
 let unsubscribeChatB = null;
 let unsubscribeUnread = null;
-let renderTimer = null;
 const renderedMessages = new Map();
-
 const messagesCollection = collection(db, "messages");
-
-function getMessageKey(data) {
-  return `${data.time || 0}:${data.senderUid || ""}:${data.receiverUid || ""}:${data.text || ""}`;
-}
 
 function renderMessages() {
   const chat = document.getElementById("chatMessages");
   if (!chat || !currentUser || !selectedUser) return;
 
-  const previousScrollHeight = chat.scrollHeight;
   const wasNearBottom =
     chat.scrollHeight - chat.scrollTop - chat.clientHeight < 120;
 
@@ -67,26 +61,22 @@ function renderMessages() {
         })
       : "";
 
-    let receipt = "";
-    if (data.senderUid === currentUser.uid) {
-      receipt = data.seen ? " ✓✓" : " ✓";
-    }
+    const receipt = data.senderUid === currentUser.uid
+      ? (data.seen ? " ✓✓" : " ✓")
+      : "";
 
     timeDiv.textContent = `${time}${receipt}`;
     div.append(textDiv, timeDiv);
     chat.appendChild(div);
   }
 
-  if (wasNearBottom || !previousScrollHeight) {
-    chat.scrollTop = chat.scrollHeight;
-  }
+  if (wasNearBottom) chat.scrollTop = chat.scrollHeight;
 }
 
 async function markIncomingMessagesSeen(snapshot) {
   if (!currentUser || !selectedUser) return;
 
-  const unseenDocs = [];
-
+  const unseenIds = [];
   snapshot.forEach((messageDoc) => {
     const data = messageDoc.data();
     if (
@@ -94,15 +84,15 @@ async function markIncomingMessagesSeen(snapshot) {
       data.senderUid === selectedUser.uid &&
       !data.seen
     ) {
-      unseenDocs.push(messageDoc.id);
+      unseenIds.push(messageDoc.id);
     }
   });
 
-  if (!unseenDocs.length) return;
+  if (!unseenIds.length) return;
 
   try {
     const batch = writeBatch(db);
-    unseenDocs.forEach((id) => {
+    unseenIds.forEach((id) => {
       batch.update(doc(db, "messages", id), { seen: true });
     });
     await batch.commit();
@@ -114,8 +104,7 @@ async function markIncomingMessagesSeen(snapshot) {
 function handleChatSnapshot(snapshot) {
   snapshot.docChanges().forEach((change) => {
     if (change.type === "removed") {
-      const old = renderedMessages.get(change.doc.id);
-      if (old) renderedMessages.delete(change.doc.id);
+      renderedMessages.delete(change.doc.id);
       return;
     }
 
@@ -135,14 +124,14 @@ export function loadMessages() {
   unsubscribeChatB = null;
   renderedMessages.clear();
 
-  const qSent = query(
+  const sentQuery = query(
     messagesCollection,
     where("senderUid", "==", currentUser.uid),
     where("receiverUid", "==", selectedUser.uid),
     orderBy("time", "asc")
   );
 
-  const qReceived = query(
+  const receivedQuery = query(
     messagesCollection,
     where("senderUid", "==", selectedUser.uid),
     where("receiverUid", "==", currentUser.uid),
@@ -150,7 +139,7 @@ export function loadMessages() {
   );
 
   unsubscribeChatA = onSnapshot(
-    qSent,
+    sentQuery,
     handleChatSnapshot,
     (error) => {
       console.error("Sent messages listener failed:", error);
@@ -159,7 +148,7 @@ export function loadMessages() {
   );
 
   unsubscribeChatB = onSnapshot(
-    qReceived,
+    receivedQuery,
     handleChatSnapshot,
     (error) => {
       console.error("Received messages listener failed:", error);
@@ -177,8 +166,7 @@ export function stopMessages() {
   unsubscribeUnread = null;
   renderedMessages.clear();
 
-  const chat = document.getElementById("chatMessages");
-  if (chat) chat.replaceChildren();
+  document.getElementById("chatMessages")?.replaceChildren();
 }
 
 export function loadUnreadCounts() {
@@ -203,27 +191,20 @@ export function loadUnreadCounts() {
       });
 
       const counts = new Map();
-
       snapshot.forEach((messageDoc) => {
         const data = messageDoc.data();
         if (!data.senderUid) return;
-        counts.set(
-          data.senderUid,
-          (counts.get(data.senderUid) || 0) + 1
-        );
+        counts.set(data.senderUid, (counts.get(data.senderUid) || 0) + 1);
       });
 
       counts.forEach((count, senderUid) => {
         const badge = document.getElementById(`unread-${senderUid}`);
         if (!badge) return;
-
         badge.style.display = "flex";
         badge.textContent = count > 99 ? "99+" : String(count);
       });
     },
-    (error) => {
-      console.error("Unread listener failed:", error);
-    }
+    (error) => console.error("Unread listener failed:", error)
   );
 }
 
@@ -241,10 +222,6 @@ export async function sendMessage() {
   if (sendBtn) sendBtn.disabled = true;
 
   try {
-    const { addDoc } = await import(
-      "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
-    );
-
     await addDoc(messagesCollection, {
       senderUid: currentUser.uid,
       receiverUid: selectedUser.uid,
@@ -253,7 +230,7 @@ export async function sendMessage() {
       seen: false
     });
 
-    input.value = "";
+    if (input) input.value = "";
   } catch (error) {
     console.error("Send message failed:", error);
     showToast("Message could not be sent.", "error");
