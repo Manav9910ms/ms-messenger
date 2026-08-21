@@ -56,9 +56,9 @@ function syncButtons() {
 }
 
 function setCallControls(active) {
-  if (voiceCallBtn) voiceCallBtn.style.display = active ? "none" : "block";
-  if (videoCallBtn) videoCallBtn.style.display = active ? "none" : "block";
-  if (endCallBtn) endCallBtn.style.display = active ? "block" : "none";
+  if (voiceCallBtn) voiceCallBtn.hidden = active;
+  if (videoCallBtn) videoCallBtn.hidden = active;
+  if (endCallBtn) endCallBtn.hidden = !active;
   syncButtons();
 }
 
