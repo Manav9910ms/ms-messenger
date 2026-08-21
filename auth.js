@@ -151,6 +151,7 @@ saveUsernameBtn.addEventListener("click", async () => {
       transaction.create(usernameRef, { uid: user.uid });
     });
 
+    await updatePresence(user, true);
     usernamePage.classList.remove("active");
     updateProfileUi(user, profile);
     showToast("Username created successfully.", "success");
