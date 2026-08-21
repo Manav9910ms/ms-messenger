@@ -6,244 +6,259 @@ import {
 
 import {
   collection,
-  addDoc,
   query,
+  where,
   orderBy,
   onSnapshot,
-  updateDoc,
+  writeBatch,
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-let unsubscribeChat = null;
+import { showToast } from "./utils.js";
+
+let unsubscribeChatA = null;
+let unsubscribeChatB = null;
 let unsubscribeUnread = null;
+let renderTimer = null;
+const renderedMessages = new Map();
 
-document.getElementById(
-  "sendBtn"
-).onclick = async ()=>{
+const messagesCollection = collection(db, "messages");
 
-  if(!selectedUser || !currentUser) return;
+function getMessageKey(data) {
+  return `${data.time || 0}:${data.senderUid || ""}:${data.receiverUid || ""}:${data.text || ""}`;
+}
 
-  const input =
-  document.getElementById(
-    "messageInput"
+function renderMessages() {
+  const chat = document.getElementById("chatMessages");
+  if (!chat || !currentUser || !selectedUser) return;
+
+  const previousScrollHeight = chat.scrollHeight;
+  const wasNearBottom =
+    chat.scrollHeight - chat.scrollTop - chat.clientHeight < 120;
+
+  const messages = [...renderedMessages.values()]
+    .filter((data) => {
+      const direct =
+        data.senderUid === currentUser.uid &&
+        data.receiverUid === selectedUser.uid;
+      const reverse =
+        data.senderUid === selectedUser.uid &&
+        data.receiverUid === currentUser.uid;
+      return direct || reverse;
+    })
+    .sort((a, b) => (a.time || 0) - (b.time || 0));
+
+  chat.replaceChildren();
+
+  for (const data of messages) {
+    const div = document.createElement("div");
+    div.className = `message ${data.senderUid === currentUser.uid ? "me" : "other"}`;
+
+    const textDiv = document.createElement("div");
+    textDiv.textContent = data.text || "";
+
+    const timeDiv = document.createElement("div");
+    timeDiv.className = "time";
+
+    const time = data.time
+      ? new Date(data.time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      : "";
+
+    let receipt = "";
+    if (data.senderUid === currentUser.uid) {
+      receipt = data.seen ? " ✓✓" : " ✓";
+    }
+
+    timeDiv.textContent = `${time}${receipt}`;
+    div.append(textDiv, timeDiv);
+    chat.appendChild(div);
+  }
+
+  if (wasNearBottom || !previousScrollHeight) {
+    chat.scrollTop = chat.scrollHeight;
+  }
+}
+
+async function markIncomingMessagesSeen(snapshot) {
+  if (!currentUser || !selectedUser) return;
+
+  const unseenDocs = [];
+
+  snapshot.forEach((messageDoc) => {
+    const data = messageDoc.data();
+    if (
+      data.receiverUid === currentUser.uid &&
+      data.senderUid === selectedUser.uid &&
+      !data.seen
+    ) {
+      unseenDocs.push(messageDoc.id);
+    }
+  });
+
+  if (!unseenDocs.length) return;
+
+  try {
+    const batch = writeBatch(db);
+    unseenDocs.forEach((id) => {
+      batch.update(doc(db, "messages", id), { seen: true });
+    });
+    await batch.commit();
+  } catch (error) {
+    console.error("Unable to mark messages as seen:", error);
+  }
+}
+
+function handleChatSnapshot(snapshot) {
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "removed") {
+      const old = renderedMessages.get(change.doc.id);
+      if (old) renderedMessages.delete(change.doc.id);
+      return;
+    }
+
+    renderedMessages.set(change.doc.id, change.doc.data());
+  });
+
+  renderMessages();
+  void markIncomingMessagesSeen(snapshot);
+}
+
+export function loadMessages() {
+  if (!currentUser || !selectedUser) return;
+
+  unsubscribeChatA?.();
+  unsubscribeChatB?.();
+  unsubscribeChatA = null;
+  unsubscribeChatB = null;
+  renderedMessages.clear();
+
+  const qSent = query(
+    messagesCollection,
+    where("senderUid", "==", currentUser.uid),
+    where("receiverUid", "==", selectedUser.uid),
+    orderBy("time", "asc")
   );
 
-  const text =
-  input.value.trim();
+  const qReceived = query(
+    messagesCollection,
+    where("senderUid", "==", selectedUser.uid),
+    where("receiverUid", "==", currentUser.uid),
+    orderBy("time", "asc")
+  );
 
-  if(text === "") return;
-
-  await addDoc(
-    collection(db,"messages"),
-    {
-      senderUid: currentUser.uid,
-      receiverUid: selectedUser.uid,
-      senderUsername:
-      document.getElementById(
-        "profileUsername"
-      ).innerText,
-      text: text,
-      time: Date.now(),
-      seen: false
+  unsubscribeChatA = onSnapshot(
+    qSent,
+    handleChatSnapshot,
+    (error) => {
+      console.error("Sent messages listener failed:", error);
+      showToast("Unable to load this chat.", "error");
     }
   );
 
-  input.value = "";
+  unsubscribeChatB = onSnapshot(
+    qReceived,
+    handleChatSnapshot,
+    (error) => {
+      console.error("Received messages listener failed:", error);
+      showToast("Unable to load this chat.", "error");
+    }
+  );
+}
 
-};
+export function stopMessages() {
+  unsubscribeChatA?.();
+  unsubscribeChatB?.();
+  unsubscribeUnread?.();
+  unsubscribeChatA = null;
+  unsubscribeChatB = null;
+  unsubscribeUnread = null;
+  renderedMessages.clear();
 
-function loadMessages(){
-  if(!currentUser || !selectedUser){
+  const chat = document.getElementById("chatMessages");
+  if (chat) chat.replaceChildren();
+}
+
+export function loadUnreadCounts() {
+  unsubscribeUnread?.();
+  unsubscribeUnread = null;
+
+  if (!currentUser) return;
+
+  const unreadQuery = query(
+    messagesCollection,
+    where("receiverUid", "==", currentUser.uid),
+    where("seen", "==", false),
+    orderBy("time", "desc")
+  );
+
+  unsubscribeUnread = onSnapshot(
+    unreadQuery,
+    (snapshot) => {
+      document.querySelectorAll(".unreadBadge").forEach((badge) => {
+        badge.style.display = "none";
+        badge.textContent = "";
+      });
+
+      const counts = new Map();
+
+      snapshot.forEach((messageDoc) => {
+        const data = messageDoc.data();
+        if (!data.senderUid) return;
+        counts.set(
+          data.senderUid,
+          (counts.get(data.senderUid) || 0) + 1
+        );
+      });
+
+      counts.forEach((count, senderUid) => {
+        const badge = document.getElementById(`unread-${senderUid}`);
+        if (!badge) return;
+
+        badge.style.display = "flex";
+        badge.textContent = count > 99 ? "99+" : String(count);
+      });
+    },
+    (error) => {
+      console.error("Unread listener failed:", error);
+    }
+  );
+}
+
+export async function sendMessage() {
+  if (!currentUser || !selectedUser) {
+    showToast("Select a user first.", "error");
     return;
   }
 
-  if(typeof unsubscribeChat === "function"){
-    unsubscribeChat();
-  }
+  const input = document.getElementById("messageInput");
+  const text = input?.value.trim();
+  if (!text) return;
 
-  const q = query(
-    collection(db,"messages"),
-    orderBy("time")
-  );
+  const sendBtn = document.getElementById("sendBtn");
+  if (sendBtn) sendBtn.disabled = true;
 
-  unsubscribeChat = onSnapshot(q,(snapshot)=>{
-
-    const chat =
-    document.getElementById(
-      "chatMessages"
+  try {
+    const { addDoc } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
     );
 
-    chat.innerHTML = "";
-
-    snapshot.forEach((docSnap)=>{
-
-      const data =
-      docSnap.data();
-
-      if(
-        !data.senderUid ||
-        !data.receiverUid
-      ){
-        return;
-      }
-
-      const c1 =
-      data.senderUid === currentUser.uid &&
-      data.receiverUid === selectedUser.uid;
-
-      const c2 =
-      data.senderUid === selectedUser.uid &&
-      data.receiverUid === currentUser.uid;
-
-      if(c1 || c2){
-
-        if(
-          data.receiverUid === currentUser.uid &&
-          !data.seen
-        ){
-          updateDoc(
-            doc(
-              db,
-              "messages",
-              docSnap.id
-            ),
-            {
-              seen: true
-            }
-          );
-        }
-
-        const div =
-        document.createElement(
-          "div"
-        );
-
-        div.className =
-        "message " +
-        (
-          data.senderUid === currentUser.uid
-          ? "me"
-          : "other"
-        );
-
-        const date =
-        new Date(data.time);
-
-        const time =
-        date.toLocaleTimeString([],{
-          hour:"2-digit",
-          minute:"2-digit"
-        });
-
-        let tick = "";
-
-        if(data.senderUid === currentUser.uid){
-          tick = data.seen
-          ? "seen"
-          : "sent";
-        }
-
-        const textDiv =
-        document.createElement("div");
-        textDiv.innerText =
-        data.text || "";
-
-        const timeDiv =
-        document.createElement("div");
-        timeDiv.className = "time";
-        timeDiv.innerText =
-        time + (tick ? " " + tick : "");
-
-        div.appendChild(textDiv);
-        div.appendChild(timeDiv);
-
-        chat.appendChild(div);
-
-      }
-
+    await addDoc(messagesCollection, {
+      senderUid: currentUser.uid,
+      receiverUid: selectedUser.uid,
+      text,
+      time: Date.now(),
+      seen: false
     });
 
-    chat.scrollTop =
-    chat.scrollHeight;
-
-  });
-
-}
-
-function loadUnreadCounts(){
-  if(!currentUser){
-    return;
+    input.value = "";
+  } catch (error) {
+    console.error("Send message failed:", error);
+    showToast("Message could not be sent.", "error");
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+    input?.focus();
   }
-
-  if(typeof unsubscribeUnread === "function"){
-    unsubscribeUnread();
-  }
-
-  const q = query(
-    collection(db,"messages"),
-    orderBy("time")
-  );
-
-  unsubscribeUnread = onSnapshot(q,(snapshot)=>{
-
-    document
-    .querySelectorAll(
-      ".unreadBadge"
-    )
-    .forEach((badge)=>{
-      badge.style.display =
-      "none";
-    });
-
-    const unreadCounts = {};
-
-    snapshot.forEach((docSnap)=>{
-
-      const data =
-      docSnap.data();
-
-      if(
-        !data.senderUid ||
-        !data.receiverUid
-      ){
-        return;
-      }
-
-      if(
-        data.receiverUid === currentUser.uid &&
-        !data.seen
-      ){
-        if(!unreadCounts[data.senderUid]){
-          unreadCounts[data.senderUid] = 0;
-        }
-
-        unreadCounts[data.senderUid]++;
-      }
-
-    });
-
-    Object.keys(unreadCounts).forEach((senderUid)=>{
-
-      const badge =
-      document.getElementById(
-        "unread-" + senderUid
-      );
-
-      if(badge){
-        badge.style.display =
-        "flex";
-
-        badge.innerText =
-        unreadCounts[senderUid];
-      }
-
-    });
-
-  });
-
 }
-
-export {
-  loadMessages,
-  loadUnreadCounts
-};
