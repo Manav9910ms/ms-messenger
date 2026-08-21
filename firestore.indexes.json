@@ -13,15 +13,6 @@
       "collectionGroup": "messages",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "senderUid", "order": "ASCENDING" },
-        { "fieldPath": "receiverUid", "order": "ASCENDING" },
-        { "fieldPath": "time", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "messages",
-      "queryScope": "COLLECTION",
-      "fields": [
         { "fieldPath": "receiverUid", "order": "ASCENDING" },
         { "fieldPath": "seen", "order": "ASCENDING" },
         { "fieldPath": "time", "order": "DESCENDING" }
