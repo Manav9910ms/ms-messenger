@@ -13,15 +13,8 @@ import {
   query
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-  applyStatus
-} from "./presence.js";
-
-import {
-  loadMessages,
-  stopMessages
-} from "./messages.js";
-
+import { applyStatus } from "./presence.js";
+import { loadMessages, stopMessages } from "./messages.js";
 import { showToast } from "./utils.js";
 
 let statusUnsubscribers = [];
@@ -66,7 +59,6 @@ function createUserElement(data) {
   unread.setAttribute("aria-label", "Unread messages");
 
   div.append(img, info, unread);
-
   statusUnsubscribers.push(applyStatus(data.uid, status));
 
   const selectUser = () => {
@@ -133,11 +125,6 @@ export async function loadUsers() {
     const fragment = document.createDocumentFragment();
     cachedUsers.forEach((user) => fragment.appendChild(createUserElement(user)));
     usersList.appendChild(fragment);
-
-    document.getElementById("usersEmpty")?.classList.toggle(
-      "active",
-      cachedUsers.length === 0
-    );
   } catch (error) {
     console.error("User loading failed:", error);
     showToast("Unable to load users. Please refresh.", "error");
