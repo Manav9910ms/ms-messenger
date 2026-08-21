@@ -1,31 +1,28 @@
 {
-  "name":"MS Connect",
-
-  "short_name":"MS Connect",
-
-  "start_url":"./",
-
-  "display":"standalone",
-
-  "background_color":"#070b14",
-
-  "theme_color":"#00c3ff",
-
-  "orientation":"portrait",
-
-  "icons":[
-
+  "id": "./",
+  "name": "MS Connect",
+  "short_name": "MS Connect",
+  "description": "Real-time messaging and calling by MS Connect.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#00c3ff",
+  "orientation": "portrait",
+  "categories": ["social", "communication"],
+  "icons": [
     {
-      "src":"icon-192.png",
-      "sizes":"192x192",
-      "type":"image/png"
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
-
     {
-      "src":"icon-512.png",
-      "sizes":"512x512",
-      "type":"image/png"
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-
   ]
 }
