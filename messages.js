@@ -3,7 +3,6 @@ import {
   collection,
   doc,
   onSnapshot,
-  orderBy,
   query,
   where,
   writeBatch
@@ -30,7 +29,8 @@ function renderMessages() {
   const wasNearBottom =
     chat.scrollHeight - chat.scrollTop - chat.clientHeight < 120;
 
-  const messages = [...renderedMessages.values()]
+  const messages = [...renderedMessages.entries()]
+    .map(([id, data]) => ({ id, ...data }))
     .filter((data) => {
       const direct =
         data.senderUid === currentUser.uid &&
@@ -115,6 +115,22 @@ function handleChatSnapshot(snapshot) {
   void markIncomingMessagesSeen(snapshot);
 }
 
+function handleListenerError(label, error) {
+  console.error(`${label} listener failed:`, error);
+
+  if (error?.code === "permission-denied") {
+    showToast("Chat access was denied by Firebase rules.", "error");
+    return;
+  }
+
+  if (error?.code === "failed-precondition") {
+    showToast("Chat needs a Firebase index deployment.", "error");
+    return;
+  }
+
+  showToast("Unable to load this chat.", "error");
+}
+
 export function loadMessages() {
   if (!currentUser || !selectedUser) return;
 
@@ -124,36 +140,31 @@ export function loadMessages() {
   unsubscribeChatB = null;
   renderedMessages.clear();
 
+  // Deliberately omit orderBy so chats work from GitHub Pages even when
+  // Firebase composite indexes have not yet been deployed. Messages are
+  // sorted locally after the two participant-specific queries return.
   const sentQuery = query(
     messagesCollection,
     where("senderUid", "==", currentUser.uid),
-    where("receiverUid", "==", selectedUser.uid),
-    orderBy("time", "asc")
+    where("receiverUid", "==", selectedUser.uid)
   );
 
   const receivedQuery = query(
     messagesCollection,
     where("senderUid", "==", selectedUser.uid),
-    where("receiverUid", "==", currentUser.uid),
-    orderBy("time", "asc")
+    where("receiverUid", "==", currentUser.uid)
   );
 
   unsubscribeChatA = onSnapshot(
     sentQuery,
     handleChatSnapshot,
-    (error) => {
-      console.error("Sent messages listener failed:", error);
-      showToast("Unable to load this chat.", "error");
-    }
+    (error) => handleListenerError("Sent messages", error)
   );
 
   unsubscribeChatB = onSnapshot(
     receivedQuery,
     handleChatSnapshot,
-    (error) => {
-      console.error("Received messages listener failed:", error);
-      showToast("Unable to load this chat.", "error");
-    }
+    (error) => handleListenerError("Received messages", error)
   );
 }
 
@@ -165,7 +176,6 @@ export function stopMessages() {
   unsubscribeChatB = null;
   unsubscribeUnread = null;
   renderedMessages.clear();
-
   document.getElementById("chatMessages")?.replaceChildren();
 }
 
@@ -175,11 +185,15 @@ export function loadUnreadCounts() {
 
   if (!currentUser) return;
 
+  document.querySelectorAll(".unreadBadge").forEach((badge) => {
+    badge.style.display = "none";
+    badge.textContent = "";
+  });
+
   const unreadQuery = query(
     messagesCollection,
     where("receiverUid", "==", currentUser.uid),
-    where("seen", "==", false),
-    orderBy("time", "desc")
+    where("seen", "==", false)
   );
 
   unsubscribeUnread = onSnapshot(
@@ -204,7 +218,9 @@ export function loadUnreadCounts() {
         badge.textContent = count > 99 ? "99+" : String(count);
       });
     },
-    (error) => console.error("Unread listener failed:", error)
+    (error) => {
+      console.error("Unread listener failed:", error);
+    }
   );
 }
 
