@@ -2,86 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MS Connect</title>
-  <link rel="icon" href="favicon.png">
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#00c3ff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="MS Connect secure real-time messaging and calling app.">
+  <meta name="application-name" content="MS Connect">
+  <title>MS Connect</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <div class="app">
-    <div class="sidebar" id="sidebar">
-      <div class="logo">MS Connect</div>
+  <main class="app" aria-label="MS Connect messenger">
+    <aside class="sidebar" id="sidebar">
+      <div class="logo" aria-label="MS Connect">MS Connect</div>
 
-      <div class="profile">
+      <section class="profile" aria-label="Your profile">
         <img id="profilePic" src="favicon.png" alt="Profile picture">
-
         <div>
           <div id="profileName">Guest</div>
           <div id="profileUsername" class="profileUsername">@username</div>
-          <div class="onlineText">Online</div>
+          <div class="onlineText" aria-label="Connection status">Online</div>
         </div>
-      </div>
+      </section>
 
-      <button id="loginBtn">Sign In With Google</button>
-      <button id="logoutBtn">Logout</button>
+      <button id="loginBtn" type="button">Sign In With Google</button>
+      <button id="logoutBtn" type="button">Logout</button>
 
-      <input type="text" id="searchInput" placeholder="Search users...">
+      <label class="srOnly" for="searchInput">Search users</label>
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Search users..."
+        autocomplete="off"
+        enterkeyhint="search"
+      >
 
       <div class="usersTitle">USERS</div>
-      <div id="usersList"></div>
-    </div>
+      <div id="usersList" class="usersList" aria-live="polite"></div>
+    </aside>
 
-    <div class="chatArea" id="chatArea">
-      <div id="chatHeader">
-        <button id="backBtn">Back</button>
+    <section class="chatArea" id="chatArea" aria-label="Chat">
+      <header id="chatHeader">
+        <button id="backBtn" type="button" aria-label="Back to users">Back</button>
         <div class="chatHeaderMain">
           <div id="chatUserName">Select User</div>
-          <div id="chatUserStatus"></div>
+          <div id="chatUserStatus" aria-live="polite"></div>
         </div>
-        <div class="callActions">
-          <button id="voiceCallBtn" disabled>Voice Call</button>
-          <button id="videoCallBtn" disabled>Video Call</button>
-          <button id="endCallBtn" class="dangerBtn" style="display:none;">End Call</button>
+        <div class="callActions" aria-label="Call actions">
+          <button id="voiceCallBtn" type="button" disabled>Voice Call</button>
+          <button id="videoCallBtn" type="button" disabled>Video Call</button>
+          <button id="endCallBtn" type="button" class="dangerBtn" hidden>End Call</button>
         </div>
-      </div>
+      </header>
 
-      <div id="videoPanel" class="videoPanel">
+      <div id="videoPanel" class="videoPanel" aria-label="Video call">
         <video id="remoteVideo" autoplay playsinline></video>
         <video id="localVideo" autoplay muted playsinline></video>
       </div>
 
-      <div id="chatMessages"></div>
+      <div id="chatMessages" aria-live="polite" aria-label="Messages"></div>
 
-      <div class="messageBox">
-        <input type="text" id="messageInput" placeholder="Type message...">
-        <button id="sendBtn">Send</button>
-      </div>
-    </div>
-  </div>
+      <form class="messageBox" id="messageForm">
+        <label class="srOnly" for="messageInput">Message</label>
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type message..."
+          maxlength="4000"
+          autocomplete="off"
+          enterkeyhint="send"
+        >
+        <button id="sendBtn" type="submit">Send</button>
+      </form>
+    </section>
+  </main>
 
-  <div id="usernamePage" class="usernamePage">
+  <section id="usernamePage" class="usernamePage" aria-modal="true" aria-labelledby="usernameTitle">
     <div class="usernameCard">
-      <h1>Create Username</h1>
+      <h1 id="usernameTitle">Create Username</h1>
       <p>Choose your public username</p>
-      <input type="text" id="usernameInput" placeholder="@username">
-      <button id="saveUsernameBtn">Continue</button>
+      <label class="srOnly" for="usernameInput">Username</label>
+      <input
+        type="text"
+        id="usernameInput"
+        placeholder="@username"
+        minlength="3"
+        maxlength="20"
+        autocomplete="username"
+        autocapitalize="none"
+      >
+      <button id="saveUsernameBtn" type="button">Continue</button>
     </div>
-  </div>
+  </section>
 
-  <div id="incomingCallModal" class="incomingCallModal">
+  <section id="incomingCallModal" class="incomingCallModal" aria-modal="true" aria-labelledby="incomingCallTitle">
     <div class="incomingCallCard">
       <h2 id="incomingCallTitle">Incoming Call</h2>
       <p id="incomingCallText">Someone is calling...</p>
       <div class="incomingCallActions">
-        <button id="acceptCallBtn">Accept</button>
-        <button id="rejectCallBtn" class="dangerBtn">Reject</button>
+        <button id="acceptCallBtn" type="button">Accept</button>
+        <button id="rejectCallBtn" type="button" class="dangerBtn">Reject</button>
       </div>
     </div>
-  </div>
+  </section>
 
+  <div id="toastContainer" class="toastContainer" aria-live="assertive" aria-atomic="true"></div>
   <audio id="remoteAudio" autoplay></audio>
 
   <script type="module" src="script.js"></script>
