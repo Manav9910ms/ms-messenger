@@ -1,0 +1,1 @@
+Google Sign-In requires `manav9910ms.github.io` in Firebase Authentication Authorized domains.
