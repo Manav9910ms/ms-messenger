@@ -5,8 +5,8 @@ import {
 } from "./firebase.js";
 
 import {
-  collection,
   addDoc,
+  collection,
   doc,
   getDoc,
   getDocs,
@@ -16,21 +16,25 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import { showToast } from "./utils.js";
+
 const rtcConfig = {
   iceServers: [
-    { urls: "stun:stun.l.google.com:19302" }
-  ]
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" }
+  ],
+  iceCandidatePoolSize: 10
 };
 
 let localStream = null;
 let peerConnection = null;
 let currentCallId = null;
 let currentCallType = "voice";
-let activeIncomingCallId = null;
-let activeIncomingCallType = "voice";
+let incomingCallId = null;
 let unsubscribeIncoming = null;
 let unsubscribeCall = null;
 let unsubscribeRemoteCandidates = null;
+let ringingTimeout = null;
 
 const voiceCallBtn = document.getElementById("voiceCallBtn");
 const videoCallBtn = document.getElementById("videoCallBtn");
@@ -45,229 +49,117 @@ const remoteVideo = document.getElementById("remoteVideo");
 const localVideo = document.getElementById("localVideo");
 const videoPanel = document.getElementById("videoPanel");
 
-export function initVoiceCalls(){
-  if(voiceCallBtn){
-    voiceCallBtn.onclick = ()=> startCall("voice");
-  }
-
-  if(videoCallBtn){
-    videoCallBtn.onclick = ()=> startCall("video");
-  }
-
-  if(endCallBtn){
-    endCallBtn.onclick = endCurrentCall;
-  }
-
-  if(acceptCallBtn){
-    acceptCallBtn.onclick = acceptIncomingCall;
-  }
-
-  if(rejectCallBtn){
-    rejectCallBtn.onclick = rejectIncomingCall;
-  }
-
-  window.addEventListener("selected-user-changed",()=>{
-    syncCallButtonState();
-  });
-
-  syncCallButtonState();
-  waitForAuthAndListenIncoming();
+function syncButtons() {
+  const disabled = !currentUser || !selectedUser || !!currentCallId;
+  if (voiceCallBtn) voiceCallBtn.disabled = disabled;
+  if (videoCallBtn) videoCallBtn.disabled = disabled;
 }
 
-function showCallError(message,error){
-  if(error && error.code === "permission-denied"){
-    alert("Call failed: Firestore rules are blocking calls collection access.");
-    console.error("Firestore permission denied:",error);
-    return;
-  }
-  console.error(message,error || "");
-  alert(message);
+function setCallControls(active) {
+  if (voiceCallBtn) voiceCallBtn.hidden = active;
+  if (videoCallBtn) videoCallBtn.hidden = active;
+  if (endCallBtn) endCallBtn.hidden = !active;
+  syncButtons();
 }
 
-function syncCallButtonState(){
-  const isDisabled = !currentUser || !selectedUser || !!currentCallId;
-
-  if(voiceCallBtn){
-    voiceCallBtn.disabled = isDisabled;
-  }
-
-  if(videoCallBtn){
-    videoCallBtn.disabled = isDisabled;
-  }
+function setVideoPanel(active) {
+  videoPanel?.classList.toggle("active", active);
 }
 
-function setCallControlsActive(isActive){
-  if(voiceCallBtn){
-    voiceCallBtn.style.display = isActive ? "none" : "block";
-  }
-
-  if(videoCallBtn){
-    videoCallBtn.style.display = isActive ? "none" : "block";
-  }
-
-  if(endCallBtn){
-    endCallBtn.style.display = isActive ? "block" : "none";
-  }
-
-  syncCallButtonState();
+function getCallParticipant(callData) {
+  if (!currentUser) return false;
+  return callData?.fromUid === currentUser.uid || callData?.toUid === currentUser.uid;
 }
 
-function setVideoPanelVisible(isVisible){
-  if(!videoPanel){
-    return;
+async function ensureLocalStream(callType) {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("MEDIA_UNSUPPORTED");
   }
 
-  videoPanel.classList.toggle("active",isVisible);
-}
-
-function waitForAuthAndListenIncoming(){
-  const intervalId = setInterval(()=>{
-    if(currentUser){
-      clearInterval(intervalId);
-      listenIncomingCalls();
-    }
-  },500);
-}
-
-function listenIncomingCalls(){
-  if(!currentUser){
-    return;
-  }
-
-  const q = query(
-    collection(db,"calls"),
-    where("toUid","==",currentUser.uid),
-    where("status","==","ringing")
-  );
-
-  if(typeof unsubscribeIncoming === "function"){
-    unsubscribeIncoming();
-  }
-
-  unsubscribeIncoming = onSnapshot(q,(snapshot)=>{
-    if(currentCallId){
-      return;
-    }
-
-    let latestCall = null;
-
-    snapshot.forEach((docSnap)=>{
-      const data = docSnap.data();
-      if(!latestCall || (data.createdAt || 0) > (latestCall.createdAt || 0)){
-        latestCall = { id: docSnap.id, ...data };
-      }
-    });
-
-    if(latestCall){
-      activeIncomingCallId = latestCall.id;
-      activeIncomingCallType = latestCall.callType || "voice";
-      incomingCallTitle.innerText =
-      activeIncomingCallType === "video" ? "Incoming Video Call" : "Incoming Voice Call";
-      incomingCallText.innerText =
-      (latestCall.fromName || "User") + " is calling you";
-      incomingCallModal.classList.add("active");
-    }else{
-      activeIncomingCallId = null;
-      incomingCallModal.classList.remove("active");
-    }
-  });
-}
-
-async function ensureLocalStream(callType){
-  if(
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ){
-    throw new Error("Media devices are not supported in this browser.");
-  }
-
-  if(localStream){
-    localStream.getTracks().forEach((track)=> track.stop());
-    localStream = null;
-  }
-
+  localStream?.getTracks().forEach((track) => track.stop());
   localStream = await navigator.mediaDevices.getUserMedia({
     audio: true,
     video: callType === "video"
   });
 
-  if(localVideo){
+  if (localVideo) {
     localVideo.srcObject = callType === "video" ? localStream : null;
   }
 
   return localStream;
 }
 
-function createPeerConnection(callId,role){
+function createPeerConnection(callId, role) {
   peerConnection = new RTCPeerConnection(rtcConfig);
 
-  localStream.getTracks().forEach((track)=>{
-    peerConnection.addTrack(track,localStream);
+  localStream?.getTracks().forEach((track) => {
+    peerConnection.addTrack(track, localStream);
   });
 
-  peerConnection.ontrack = (event)=>{
+  peerConnection.ontrack = (event) => {
     const stream = event.streams[0];
-    if(remoteAudio){
-      remoteAudio.srcObject = stream;
-    }
-    if(remoteVideo && currentCallType === "video"){
+    if (remoteAudio) remoteAudio.srcObject = stream;
+    if (remoteVideo && currentCallType === "video") {
       remoteVideo.srcObject = stream;
     }
   };
 
-  const localCandidatesRef = collection(
+  peerConnection.onconnectionstatechange = () => {
+    const state = peerConnection?.connectionState;
+    if (state === "failed" || state === "closed") {
+      void endCurrentCall(false);
+    }
+  };
+
+  const localCandidates = collection(
     db,
     "calls",
     callId,
     role === "caller" ? "offerCandidates" : "answerCandidates"
   );
 
-  peerConnection.onicecandidate = async (event)=>{
-    if(event.candidate){
-      await addDoc(localCandidatesRef,event.candidate.toJSON());
+  peerConnection.onicecandidate = async (event) => {
+    if (!event.candidate) return;
+    try {
+      await addDoc(localCandidates, event.candidate.toJSON());
+    } catch (error) {
+      console.error("ICE candidate write failed:", error);
     }
   };
 
-  const remoteCandidatesRef = collection(
+  const remoteCandidates = collection(
     db,
     "calls",
     callId,
     role === "caller" ? "answerCandidates" : "offerCandidates"
   );
 
-  if(typeof unsubscribeRemoteCandidates === "function"){
-    unsubscribeRemoteCandidates();
-  }
-
-  unsubscribeRemoteCandidates = onSnapshot(remoteCandidatesRef,(snapshot)=>{
-    snapshot.docChanges().forEach((change)=>{
-      if(change.type === "added" && peerConnection){
-        peerConnection
-        .addIceCandidate(new RTCIceCandidate(change.doc.data()))
-        .catch(()=>{});
-      }
+  unsubscribeRemoteCandidates?.();
+  unsubscribeRemoteCandidates = onSnapshot(remoteCandidates, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type !== "added" || !peerConnection) return;
+      peerConnection.addIceCandidate(
+        new RTCIceCandidate(change.doc.data())
+      ).catch((error) => {
+        console.error("ICE candidate failed:", error);
+      });
     });
   });
 }
 
-async function startCall(callType){
-  if(!currentUser || !selectedUser || currentCallId){
-    if(!selectedUser){
-      showCallError("Please select a user before starting a call.");
-    }
+async function startCall(callType) {
+  if (!currentUser || !selectedUser || currentCallId) return;
+
+  if (typeof RTCPeerConnection === "undefined") {
+    showToast("This browser does not support calls.", "error");
     return;
   }
 
-  if(typeof RTCPeerConnection === "undefined"){
-    showCallError("WebRTC is not supported in this browser.");
-    return;
-  }
-
-  try{
+  try {
     currentCallType = callType;
     await ensureLocalStream(callType);
 
-    const callRef = await addDoc(collection(db,"calls"),{
+    const callRef = await addDoc(collection(db, "calls"), {
       fromUid: currentUser.uid,
       toUid: selectedUser.uid,
       fromName: currentUser.displayName || "User",
@@ -278,63 +170,73 @@ async function startCall(callType){
     });
 
     currentCallId = callRef.id;
-    setCallControlsActive(true);
-    setVideoPanelVisible(callType === "video");
+    setCallControls(true);
+    setVideoPanel(callType === "video");
 
-    createPeerConnection(currentCallId,"caller");
+    createPeerConnection(currentCallId, "caller");
 
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
 
-    await updateDoc(doc(db,"calls",currentCallId),{
+    await updateDoc(callRef, {
       offer: {
         type: offer.type,
         sdp: offer.sdp
       }
     });
 
-    subscribeToCallState("caller");
-  }catch(error){
-    showCallError(
-      "Unable to start video/voice call. Please allow microphone/camera permission and try again.",
-      error
+    subscribeToCall(currentCallId, "caller");
+
+    ringingTimeout = setTimeout(() => {
+      if (currentCallId === callRef.id) {
+        void endCurrentCall(true);
+      }
+    }, 30000);
+  } catch (error) {
+    console.error("Start call failed:", error);
+    showToast(
+      error.message === "MEDIA_UNSUPPORTED"
+        ? "Calls are not supported in this browser."
+        : "Unable to start the call. Check microphone/camera permission.",
+      "error"
     );
     cleanupCall();
   }
 }
 
-async function acceptIncomingCall(){
-  if(!activeIncomingCallId || !currentUser || currentCallId){
-    return;
-  }
+async function acceptIncomingCall() {
+  if (!incomingCallId || !currentUser || currentCallId) return;
 
-  try{
-    const callDocRef = doc(db,"calls",activeIncomingCallId);
-    const callSnap = await getDoc(callDocRef);
+  try {
+    const callId = incomingCallId;
+    const callRef = doc(db, "calls", callId);
+    const callSnap = await getDoc(callRef);
 
-    if(!callSnap.exists()){
-      incomingCallModal.classList.remove("active");
-      activeIncomingCallId = null;
+    if (!callSnap.exists()) {
+      closeIncomingModal();
       return;
     }
 
     const callData = callSnap.data();
-    if(!callData.offer){
+    if (!getCallParticipant(callData) || callData.toUid !== currentUser.uid) {
+      closeIncomingModal();
       return;
     }
 
-    currentCallType = callData.callType || "voice";
+    if (callData.status !== "ringing" || !callData.offer) {
+      closeIncomingModal();
+      return;
+    }
+
+    currentCallType = callData.callType === "video" ? "video" : "voice";
     await ensureLocalStream(currentCallType);
 
-    currentCallId = activeIncomingCallId;
-    activeIncomingCallId = null;
-    incomingCallModal.classList.remove("active");
+    currentCallId = callId;
+    closeIncomingModal();
+    setCallControls(true);
+    setVideoPanel(currentCallType === "video");
 
-    setCallControlsActive(true);
-    setVideoPanelVisible(currentCallType === "video");
-
-    createPeerConnection(currentCallId,"callee");
-
+    createPeerConnection(currentCallId, "callee");
     await peerConnection.setRemoteDescription(
       new RTCSessionDescription(callData.offer)
     );
@@ -342,7 +244,7 @@ async function acceptIncomingCall(){
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
-    await updateDoc(callDocRef,{
+    await updateDoc(callRef, {
       answer: {
         type: answer.type,
         sdp: answer.sdp
@@ -351,145 +253,220 @@ async function acceptIncomingCall(){
       answeredAt: Date.now()
     });
 
-    subscribeToCallState("callee");
-  }catch(error){
-    showCallError(
-      "Unable to accept call. Please allow microphone/camera permission and try again.",
-      error
-    );
+    subscribeToCall(currentCallId, "callee");
+  } catch (error) {
+    console.error("Accept call failed:", error);
+    showToast("Unable to accept the call.", "error");
     cleanupCall();
   }
 }
 
-async function rejectIncomingCall(){
-  if(!activeIncomingCallId){
-    return;
-  }
+async function rejectIncomingCall() {
+  if (!incomingCallId) return;
 
-  try{
-    await updateDoc(doc(db,"calls",activeIncomingCallId),{
-      status: "rejected",
-      endedAt: Date.now()
-    });
-  }catch(error){
-    console.error("Reject call failed:",error);
-  }
+  const id = incomingCallId;
+  try {
+    const callRef = doc(db, "calls", id);
+    const callSnap = await getDoc(callRef);
 
-  activeIncomingCallId = null;
-  incomingCallModal.classList.remove("active");
+    if (callSnap.exists() && getCallParticipant(callSnap.data())) {
+      await updateDoc(callRef, {
+        status: "rejected",
+        endedAt: Date.now()
+      });
+    }
+  } catch (error) {
+    console.error("Reject call failed:", error);
+  } finally {
+    closeIncomingModal();
+  }
 }
 
-function subscribeToCallState(role){
-  const callDocRef = doc(db,"calls",currentCallId);
+function closeIncomingModal() {
+  incomingCallId = null;
+  incomingCallModal?.classList.remove("active");
+}
 
-  if(typeof unsubscribeCall === "function"){
-    unsubscribeCall();
-  }
+function subscribeToCall(callId, role) {
+  unsubscribeCall?.();
 
-  unsubscribeCall = onSnapshot(callDocRef,async (snapshot)=>{
-    if(!snapshot.exists()){
+  const callRef = doc(db, "calls", callId);
+  unsubscribeCall = onSnapshot(callRef, async (snapshot) => {
+    if (!snapshot.exists()) {
       cleanupCall();
       return;
     }
 
     const data = snapshot.data();
 
-    if(
+    if (!getCallParticipant(data)) {
+      cleanupCall();
+      return;
+    }
+
+    if (
       role === "caller" &&
       data.answer &&
       peerConnection &&
       !peerConnection.currentRemoteDescription
-    ){
+    ) {
       await peerConnection.setRemoteDescription(
         new RTCSessionDescription(data.answer)
       );
 
-      await updateDoc(callDocRef,{ status: "ongoing" });
+      if (data.status === "ringing") {
+        await updateDoc(callRef, { status: "ongoing" });
+      }
     }
 
-    if(data.status === "ended" || data.status === "rejected"){
+    if (["ended", "rejected", "missed"].includes(data.status)) {
       cleanupCall();
     }
+  }, (error) => {
+    console.error("Call listener failed:", error);
+    cleanupCall();
   });
 }
 
-async function endCurrentCall(){
-  if(!currentCallId){
+async function endCurrentCall(writeState = true) {
+  const callId = currentCallId;
+  if (!callId) {
+    cleanupCall();
     return;
   }
 
-  try{
-    await updateDoc(doc(db,"calls",currentCallId),{
-      status: "ended",
-      endedAt: Date.now()
-    });
-  }catch(error){
-    console.error("End call failed:",error);
+  if (writeState) {
+    try {
+      const callRef = doc(db, "calls", callId);
+      const callSnap = await getDoc(callRef);
+      if (callSnap.exists() && getCallParticipant(callSnap.data())) {
+        await updateDoc(callRef, {
+          status: "ended",
+          endedAt: Date.now()
+        });
+      }
+    } catch (error) {
+      console.error("End call failed:", error);
+    }
   }
 
   cleanupCall();
 }
 
-function cleanupCall(){
-  if(peerConnection){
-    peerConnection.close();
-    peerConnection = null;
+function cleanupCall() {
+  if (ringingTimeout) {
+    clearTimeout(ringingTimeout);
+    ringingTimeout = null;
   }
 
-  if(localStream){
-    localStream.getTracks().forEach((track)=> track.stop());
-    localStream = null;
-  }
+  peerConnection?.close();
+  peerConnection = null;
 
-  if(remoteAudio){
-    remoteAudio.srcObject = null;
-  }
+  localStream?.getTracks().forEach((track) => track.stop());
+  localStream = null;
 
-  if(remoteVideo){
-    remoteVideo.srcObject = null;
-  }
+  if (remoteAudio) remoteAudio.srcObject = null;
+  if (remoteVideo) remoteVideo.srcObject = null;
+  if (localVideo) localVideo.srcObject = null;
 
-  if(localVideo){
-    localVideo.srcObject = null;
-  }
-
-  if(typeof unsubscribeCall === "function"){
-    unsubscribeCall();
-    unsubscribeCall = null;
-  }
-
-  if(typeof unsubscribeRemoteCandidates === "function"){
-    unsubscribeRemoteCandidates();
-    unsubscribeRemoteCandidates = null;
-  }
+  unsubscribeCall?.();
+  unsubscribeRemoteCandidates?.();
+  unsubscribeCall = null;
+  unsubscribeRemoteCandidates = null;
 
   currentCallId = null;
   currentCallType = "voice";
-  incomingCallModal.classList.remove("active");
-  setVideoPanelVisible(false);
-  setCallControlsActive(false);
+  setVideoPanel(false);
+  setCallControls(false);
 }
 
-export async function cleanupStaleCalls(){
-  if(!currentUser){
-    return;
-  }
+function listenIncomingCalls() {
+  unsubscribeIncoming?.();
+  if (!currentUser) return;
 
-  const q = query(
-    collection(db,"calls"),
-    where("status","==","ringing"),
-    where("fromUid","==",currentUser.uid)
+  const incomingQuery = query(
+    collection(db, "calls"),
+    where("toUid", "==", currentUser.uid),
+    where("status", "==", "ringing")
   );
 
-  const snapshot = await getDocs(q);
+  unsubscribeIncoming = onSnapshot(incomingQuery, (snapshot) => {
+    if (currentCallId) return;
 
-  snapshot.forEach(async (docSnap)=>{
-    const data = docSnap.data();
-    if((Date.now() - (data.createdAt || 0)) > 120000){
-      await updateDoc(doc(db,"calls",docSnap.id),{
-        status: "ended",
-        endedAt: Date.now()
-      });
+    let latest = null;
+    snapshot.forEach((callDoc) => {
+      const data = callDoc.data();
+      if (!latest || (data.createdAt || 0) > (latest.createdAt || 0)) {
+        latest = { id: callDoc.id, ...data };
+      }
+    });
+
+    if (!latest) {
+      closeIncomingModal();
+      return;
+    }
+
+    incomingCallId = latest.id;
+    incomingCallTitle.textContent =
+      latest.callType === "video" ? "Incoming Video Call" : "Incoming Voice Call";
+    incomingCallText.textContent = `${latest.fromName || "User"} is calling you`;
+    incomingCallModal?.classList.add("active");
+  }, (error) => {
+    console.error("Incoming calls listener failed:", error);
+  });
+}
+
+export function initCalls() {
+  voiceCallBtn?.addEventListener("click", () => void startCall("voice"));
+  videoCallBtn?.addEventListener("click", () => void startCall("video"));
+  endCallBtn?.addEventListener("click", () => void endCurrentCall(true));
+  acceptCallBtn?.addEventListener("click", () => void acceptIncomingCall());
+  rejectCallBtn?.addEventListener("click", () => void rejectIncomingCall());
+
+  window.addEventListener("ms-auth-ready", ({ detail }) => {
+    if (detail?.user) {
+      listenIncomingCalls();
+      syncButtons();
+    } else {
+      unsubscribeIncoming?.();
+      unsubscribeIncoming = null;
+      cleanupCall();
+      closeIncomingModal();
     }
   });
+
+  window.addEventListener("selected-user-changed", syncButtons);
+  syncButtons();
+}
+
+export async function cleanupStaleCalls() {
+  if (!currentUser) return;
+
+  try {
+    const staleQuery = query(
+      collection(db, "calls"),
+      where("fromUid", "==", currentUser.uid),
+      where("status", "==", "ringing")
+    );
+
+    const snapshot = await getDocs(staleQuery);
+    const cutoff = Date.now() - 120000;
+
+    const updates = [];
+    snapshot.forEach((callDoc) => {
+      const data = callDoc.data();
+      if ((data.createdAt || 0) < cutoff) {
+        updates.push(
+          updateDoc(doc(db, "calls", callDoc.id), {
+            status: "missed",
+            endedAt: Date.now()
+          })
+        );
+      }
+    });
+
+    await Promise.allSettled(updates);
+  } catch (error) {
+    console.error("Stale call cleanup failed:", error);
+  }
 }

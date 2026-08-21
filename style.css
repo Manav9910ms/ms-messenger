@@ -1,625 +1,566 @@
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-body{
-  background:#070b14;
-  color:white;
-  height:100dvh;
-  overflow:hidden;
+:root {
+  color-scheme: dark;
+  font-family: Arial, sans-serif;
 }
 
-.app{
-  display:flex;
-  height:100dvh;
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: #070b14;
+  color: #fff;
 }
 
-/* SIDEBAR */
-
-.sidebar{
-  width:350px;
-  background:#0d1320;
-  border-right:1px solid #1f2a44;
-  display:flex;
-  flex-direction:column;
-  padding:20px;
+body {
+  overflow: hidden;
 }
 
-.logo{
-  font-size:30px;
-  font-weight:bold;
-  color:#00c3ff;
-  margin-bottom:25px;
-  text-shadow:0 0 15px #00c3ff;
+button,
+input {
+  font: inherit;
 }
 
-.profile{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:20px;
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px;
+  color: #fff;
+  background: linear-gradient(45deg, #00bfff, #8a2be2);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s ease, opacity .15s ease;
 }
 
-.profile img{
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  border:2px solid #8a2be2;
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
-.onlineText{
-  color:#00ff99;
-  font-size:13px;
-  margin-top:3px;
+button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
 }
 
-button{
-  background:linear-gradient(45deg,#00bfff,#8a2be2);
-  border:none;
-  color:white;
-  padding:12px;
-  border-radius:15px;
-  cursor:pointer;
-  margin-bottom:12px;
-  font-weight:bold;
+button:focus-visible,
+input:focus-visible,
+.user:focus-visible {
+  outline: 2px solid #00c3ff;
+  outline-offset: 2px;
 }
 
-#searchInput{
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#18233a;
-  color:white;
-  margin-bottom:15px;
-  outline:none;
+.app {
+  display: flex;
+  width: 100%;
+  height: 100dvh;
 }
 
-.usersTitle{
-  margin-bottom:10px;
-  color:#00c3ff;
+.sidebar {
+  width: 350px;
+  flex: 0 0 350px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: #0d1320;
+  border-right: 1px solid #1f2a44;
 }
 
-#usersList{
-  overflow-y:auto;
-  flex:1;
+.logo {
+  margin-bottom: 25px;
+  color: #00c3ff;
+  font-size: 30px;
+  font-weight: 800;
+  text-shadow: 0 0 15px #00c3ff;
 }
 
-/* USER CARD */
-
-.user{
-  background:#121a2b;
-  padding:12px;
-  border-radius:15px;
-  margin-bottom:10px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  cursor:pointer;
-  position:relative;
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.user img{
-  width:50px;
-  height:50px;
-  border-radius:50%;
+.profile img {
+  width: 55px;
+  height: 55px;
+  border: 2px solid #8a2be2;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-.userInfo{
-  display:flex;
-  flex-direction:column;
-  min-width:0;
+.profileUsername,
+.userUsername {
+  color: #9aa4b2;
+  font-size: 13px;
 }
 
-.userEmail{
-  font-size:12px;
-  opacity:0.7;
+.onlineText {
+  margin-top: 4px;
+  color: #00ff99;
+  font-size: 12px;
 }
 
-.status{
-  font-size:12px;
-  margin-top:4px;
-  opacity:0.8;
+#logoutBtn {
+  display: none;
 }
 
-/* UNREAD BADGE */
-
-.unreadBadge{
-
-  position:absolute;
-
-  right:12px;
-
-  top:50%;
-
-  transform:translateY(-50%);
-
-  min-width:22px;
-
-  height:22px;
-
-  background:#ff2b2b;
-
-  border-radius:50%;
-
-  display:none;
-
-  justify-content:center;
-
-  align-items:center;
-
-  color:white;
-
-  font-size:11px;
-
-  font-weight:bold;
-
-  padding:0 6px;
-
-  z-index:5;
-
+#searchInput {
+  width: 100%;
+  margin: 2px 0 15px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  outline: none;
+  background: #18233a;
+  color: #fff;
 }
 
-/* CHAT AREA */
-
-.chatArea{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  min-height:0;
+#searchInput::placeholder,
+#messageInput::placeholder,
+#usernameInput::placeholder {
+  color: #8b95a8;
 }
 
-#chatHeader{
-  padding:20px;
-  background:#0d1320;
-  border-bottom:1px solid #1f2a44;
-  flex-shrink:0;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
+.usersTitle {
+  margin-bottom: 10px;
+  color: #00c3ff;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.chatHeaderMain{
-  min-width:0;
+.usersList {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
-.callActions{
-  display:flex;
-  gap:8px;
-  align-items:center;
+.user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 15px;
+  background: #121a2b;
+  cursor: pointer;
+}
+
+.user:hover {
+  background: #18233a;
+}
+
+.user img {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userInfo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userInfo > div:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  margin-top: 2px;
+  color: #9aa4b2;
+  font-size: 11px;
+}
+
+.status.online {
+  color: #00ff99;
+}
+
+.unreadBadge {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: none;
+  min-width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ff2b2b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  transform: translateY(-50%);
+}
+
+.chatArea {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px;
+  flex-shrink: 0;
+  background: #0d1320;
+  border-bottom: 1px solid #1f2a44;
+}
+
+.chatHeaderMain {
+  min-width: 0;
+  flex: 1;
+}
+
+#chatUserName {
+  overflow: hidden;
+  color: #00c3ff;
+  font-size: 22px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#chatUserStatus {
+  min-height: 16px;
+  margin-top: 5px;
+  color: #9aa4b2;
+  font-size: 12px;
+}
+
+.callActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 #voiceCallBtn,
 #videoCallBtn,
-#endCallBtn{
-  margin-bottom:0;
-  padding:10px 12px;
-  font-size:13px;
+#endCallBtn {
+  margin: 0;
+  padding: 9px 12px;
+  font-size: 12px;
 }
 
-#voiceCallBtn:disabled,
-#videoCallBtn:disabled{
-  opacity:0.6;
-  cursor:not-allowed;
+.dangerBtn {
+  background: linear-gradient(45deg, #ff4d4d, #c61515);
 }
 
-.dangerBtn{
-  background:linear-gradient(45deg,#ff4d4d,#c61515);
+#chatMessages {
+  min-height: 0;
+  flex: 1;
+  padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
-#chatUserName{
-  font-size:22px;
-  color:#00c3ff;
+.message {
+  max-width: min(70%, 520px);
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-#chatUserStatus{
-  margin-top:5px;
-  font-size:13px;
-  opacity:0.8;
+.me {
+  margin-left: auto;
+  background: linear-gradient(45deg, #00bfff, #8a2be2);
 }
 
-#chatMessages{
-  flex:1;
-  padding:20px;
-  overflow-y:auto;
-  overflow-x:hidden;
-  min-height:0;
+.other {
+  margin-right: auto;
+  background: #18233a;
 }
 
-.videoPanel{
-  display:none;
-  position:relative;
-  background:#060913;
-  border-bottom:1px solid #1f2a44;
-  height:220px;
+.time {
+  margin-top: 7px;
+  color: rgba(255, 255, 255, .72);
+  font-size: 10px;
+  text-align: right;
 }
 
-.videoPanel.active{
-  display:block;
+.messageBox {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  flex-shrink: 0;
+  background: #0d1320;
+  border-top: 1px solid #1f2a44;
 }
 
-#remoteVideo{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  background:#000;
+#messageInput {
+  min-width: 0;
+  flex: 1;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  outline: none;
+  background: #18233a;
+  color: #fff;
 }
 
-#localVideo{
-  position:absolute;
-  right:12px;
-  bottom:12px;
-  width:120px;
-  height:80px;
-  object-fit:cover;
-  border:2px solid #00c3ff;
-  border-radius:8px;
-  background:#000;
+#sendBtn {
+  width: 100px;
 }
 
-/* MESSAGE */
-
-.message{
-  max-width:340px;
-  padding:14px;
-  margin-bottom:15px;
-  border-radius:18px;
-  word-wrap:break-word;
-  overflow:hidden;
-  word-break:break-word;
+.videoPanel {
+  position: relative;
+  display: none;
+  height: 240px;
+  flex-shrink: 0;
+  background: #060913;
+  border-bottom: 1px solid #1f2a44;
 }
 
-.me{
-  background:linear-gradient(45deg,#00bfff,#8a2be2);
-  margin-left:auto;
+.videoPanel.active {
+  display: block;
 }
 
-.other{
-  background:#18233a;
+#remoteVideo {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+  object-fit: cover;
 }
 
-.sender{
-  font-size:12px;
-  opacity:0.7;
-  margin-bottom:5px;
+#localVideo {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 140px;
+  height: 92px;
+  border: 2px solid #00c3ff;
+  border-radius: 10px;
+  background: #000;
+  object-fit: cover;
 }
 
-.time{
-  font-size:11px;
-  opacity:0.7;
-  margin-top:8px;
-  text-align:right;
+.usernamePage,
+.incomingCallModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-.tick{
-  margin-left:6px;
+.usernamePage {
+  background: #070b14;
 }
 
-.message img{
-  width:100%;
-  border-radius:10px;
-  margin-top:10px;
+.usernamePage.active,
+.incomingCallModal.active {
+  display: flex;
 }
 
-#typingIndicator{
-  height:25px;
-  padding-left:20px;
-  font-size:13px;
-  opacity:0.7;
+.usernameCard,
+.incomingCallCard {
+  width: 100%;
+  max-width: 400px;
+  padding: 28px;
+  border: 1px solid #1f2a44;
+  border-radius: 22px;
+  background: #121a2b;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .4);
 }
 
-/* MESSAGE BOX */
-
-.messageBox{
-  display:flex;
-  gap:10px;
-  padding:12px;
-  background:#0d1320;
-  border-top:1px solid #1f2a44;
-  flex-shrink:0;
+.usernameCard {
+  text-align: center;
 }
 
-#messageInput{
-  flex:1;
-  padding:15px;
-  border:none;
-  border-radius:15px;
-  background:#18233a;
-  color:white;
-  outline:none;
+.usernameCard h1,
+.incomingCallCard h2 {
+  margin-bottom: 8px;
+  color: #00c3ff;
 }
 
-#imageBtn{
-  width:60px;
+.usernameCard p,
+.incomingCallCard p {
+  margin-bottom: 20px;
+  color: #b7c0d0;
 }
 
-#sendBtn{
-  width:120px;
+#usernameInput {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  outline: none;
+  background: #18233a;
+  color: #fff;
 }
 
-/* USERNAME PAGE */
-
-.usernamePage{
-
-  position:fixed;
-
-  top:0;
-  left:0;
-
-  width:100%;
-  height:100dvh;
-
-  background:#070b14;
-
-  z-index:9999;
-
-  display:none;
-
-  justify-content:center;
-  align-items:center;
-
-  padding:20px;
-
+.incomingCallModal {
+  background: rgba(0, 0, 0, .62);
 }
 
-.usernamePage.active{
-  display:flex;
+.incomingCallActions {
+  display: flex;
+  gap: 10px;
 }
 
-.usernameCard{
-
-  width:100%;
-  max-width:400px;
-
-  background:#121a2b;
-
-  border:1px solid #1f2a44;
-
-  border-radius:25px;
-
-  padding:35px 25px;
-
-  text-align:center;
-
+.incomingCallActions button {
+  flex: 1;
+  margin: 0;
 }
 
-.usernameCard h1{
-
-  color:#00c3ff;
-
-  margin-bottom:10px;
-
+.toastContainer {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(360px, calc(100vw - 36px));
+  pointer-events: none;
 }
 
-.usernameCard p{
-
-  opacity:0.8;
-
-  margin-bottom:25px;
-
+.toast {
+  padding: 12px 14px;
+  border: 1px solid #2d3c5f;
+  border-radius: 12px;
+  background: #121a2b;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity .2s ease, transform .2s ease;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .35);
 }
 
-#usernameInput{
-
-  width:100%;
-
-  padding:15px;
-
-  border:none;
-
-  border-radius:15px;
-
-  background:#18233a;
-
-  color:white;
-
-  outline:none;
-
-  margin-bottom:20px;
-
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.profileUsername{
-
-  font-size:14px;
-
-  color:#9aa4b2;
-
-  margin-top:2px;
-
+.toast-error {
+  border-color: #ff4d4d;
 }
 
-.incomingCallModal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.55);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:9998;
-  padding:20px;
+.toast-success {
+  border-color: #00ff99;
 }
 
-.incomingCallModal.active{
-  display:flex;
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.incomingCallCard{
-  width:100%;
-  max-width:380px;
-  background:#121a2b;
-  border:1px solid #1f2a44;
-  border-radius:18px;
-  padding:22px;
-}
-
-.incomingCallCard h2{
-  color:#00c3ff;
-  margin-bottom:8px;
-}
-
-.incomingCallCard p{
-  opacity:0.9;
-  margin-bottom:16px;
-}
-
-.incomingCallActions{
-  display:flex;
-  gap:10px;
-}
-
-.incomingCallActions button{
-  margin-bottom:0;
-  flex:1;
-}
-
-/* BACK BUTTON */
-
-#backBtn{
-  display:none;
-}
-
-/* MOBILE */
-
-@media(max-width:768px){
-
-  .app{
-    height:100dvh;
-    overflow:hidden;
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    flex-basis: 100%;
+    padding: 15px;
+    border-right: 0;
   }
 
-  .sidebar{
-    width:100%;
-    height:100dvh;
-    border-right:none;
-    padding:15px;
+  .sidebar.hide {
+    display: none;
   }
 
-  .sidebar.hide{
-    display:none;
+  .chatArea {
+    display: none;
+    width: 100%;
   }
 
-  .chatArea{
-    display:none;
-    width:100%;
-    height:100dvh;
-    flex-direction:column;
+  .chatArea.active {
+    display: flex;
   }
 
-  .chatArea.active{
-    display:flex;
+  #backBtn {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 9px 11px;
   }
 
-  #backBtn{
-    display:block;
-    width:50px;
-    margin-bottom:10px;
+  .logo {
+    margin-bottom: 18px;
+    font-size: 24px;
   }
 
-  .logo{
-    font-size:24px;
-    margin-bottom:18px;
+  .profile img {
+    width: 48px;
+    height: 48px;
   }
 
-  .profile img{
-    width:48px;
-    height:48px;
+  #chatHeader {
+    padding: 12px;
+    gap: 8px;
   }
 
-  button{
-    padding:10px;
-    font-size:14px;
-  }
-
-  #searchInput{
-    padding:10px;
-    font-size:14px;
-  }
-
-  .user{
-    padding:10px;
-  }
-
-  .user img{
-    width:45px;
-    height:45px;
-  }
-
-  #chatHeader{
-    padding:15px;
-    gap:8px;
-  }
-
-  #chatUserName{
-    font-size:20px;
-  }
-
-  #chatUserStatus{
-    font-size:12px;
-  }
-
-  #chatMessages{
-    flex:1;
-    padding:12px;
-    overflow-y:auto;
-    overflow-x:hidden;
-    min-height:0;
-  }
-
-  .message{
-    max-width:85%;
-    padding:12px;
-    font-size:14px;
-  }
-
-  .sender{
-    font-size:11px;
-  }
-
-  .time{
-    font-size:10px;
-  }
-
-  .messageBox{
-    padding:10px;
-    gap:8px;
-  }
-
-  #messageInput{
-    padding:12px;
-    font-size:14px;
-  }
-
-  #sendBtn{
-    width:90px;
-    font-size:14px;
-  }
-
-  .callActions{
-    flex-direction:column;
-    align-items:flex-end;
+  .callActions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   #voiceCallBtn,
   #videoCallBtn,
-  #endCallBtn{
-    width:95px;
-    padding:8px;
-    font-size:12px;
+  #endCallBtn {
+    width: 92px;
   }
 
-  .videoPanel{
-    height:180px;
+  #chatMessages {
+    padding: 12px;
   }
 
-  #localVideo{
-    width:96px;
-    height:68px;
-    right:8px;
-    bottom:8px;
+  .message {
+    max-width: 86%;
+    padding: 11px 12px;
   }
 
+  .messageBox {
+    padding: 9px;
+    padding-bottom: calc(9px + env(safe-area-inset-bottom));
+  }
+
+  #messageInput {
+    padding: 12px;
+  }
+
+  #sendBtn {
+    width: 82px;
+  }
+
+  .videoPanel {
+    height: 190px;
+  }
+
+  #localVideo {
+    width: 98px;
+    height: 68px;
+    right: 8px;
+    bottom: 8px;
+  }
 }

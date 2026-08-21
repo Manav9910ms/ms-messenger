@@ -7,50 +7,25 @@ import {
   onValue
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import {
-  formatLastSeen
-} from "./utils.js";
+import { formatLastSeen } from "./utils.js";
 
-export function listenUserStatus(uid){
+export function applyStatus(uid, element) {
+  if (!uid || !element) return () => {};
 
-  const statusRef =
-  ref(
-    realtimeDb,
-    "status/" + uid
-  );
+  const statusRef = ref(realtimeDb, `status/${uid}`);
 
-  return statusRef;
+  return onValue(statusRef, (snapshot) => {
+    const status = snapshot.val();
 
-}
-
-export function applyStatus(
-  statusRef,
-  element
-){
-
-  onValue(statusRef,(snapshot)=>{
-
-    const status =
-    snapshot.val();
-
-    if(status && status.online){
-
-      element.innerText =
-      "Online";
-
-    }else if(status){
-
-      element.innerText =
-      formatLastSeen(
-        status.lastSeen
-      );
-
-    }else{
-
-      element.innerText = "";
-
+    if (status?.online) {
+      element.textContent = "Online";
+      element.classList.add("online");
+      return;
     }
 
+    element.classList.remove("online");
+    element.textContent = status?.lastSeen
+      ? formatLastSeen(status.lastSeen)
+      : "Offline";
   });
-
 }
