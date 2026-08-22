@@ -1,4 +1,55 @@
-const CACHE_NAME = "ms-connect-v13";
+importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js");
+
+const CACHE_NAME = "ms-connect-v14";
+
+firebase.initializeApp({
+  apiKey: "AIzaSyB92P1v8_9hPLhgqN5YmUzUXF_IIuD7Al0",
+  authDomain: "ms-messenger-sys.firebaseapp.com",
+  projectId: "ms-messenger-sys",
+  storageBucket: "ms-messenger-sys.firebasestorage.app",
+  messagingSenderId: "761516646845",
+  appId: "1:761516646845:web:a574e6677fcc9f826872d4"
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  const data = payload?.data || {};
+  const notification = payload?.notification || {};
+
+  const title = notification.title ||
+    (data.senderName ? `New message from ${data.senderName}` : "MS Connect");
+  const body = notification.body || data.body || "You have a new message.";
+
+  self.registration.showNotification(title, {
+    body,
+    icon: "./icon-192.png",
+    badge: "./favicon.png",
+    tag: data.senderUid ? `message-${data.senderUid}` : "ms-connect-message",
+    renotify: true,
+    data: {
+      senderUid: data.senderUid || "",
+      messageId: data.messageId || ""
+    }
+  });
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const target = new URL("./", self.location.origin).href;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) return client.focus();
+      }
+
+      return self.clients.openWindow?.(target);
+    })
+  );
+});
 
 const APP_SHELL = [
   "./",
@@ -10,6 +61,7 @@ const APP_SHELL = [
   "./messages.js",
   "./calls.js",
   "./presence.js",
+  "./typing.js",
   "./firebase.js",
   "./firebase-config.js",
   "./utils.js",
