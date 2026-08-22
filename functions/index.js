@@ -29,7 +29,7 @@ exports.sendMessageNotification = onDocumentCreated(
 
     const tokensSnap = await db.collection(`users/${receiverUid}/fcmTokens`).get();
     const tokens = tokensSnap.docs
-      .map((doc) => ({ id: doc.id, token: doc.get("token") }))
+      .map((tokenDoc) => ({ id: tokenDoc.id, token: tokenDoc.get("token") }))
       .filter((item) => typeof item.token === "string" && item.token.length > 0);
 
     if (!tokens.length) return;
@@ -45,11 +45,6 @@ exports.sendMessageNotification = onDocumentCreated(
         senderName,
         messageId: snapshot.id,
         body: text.length > 500 ? `${text.slice(0, 497)}…` : text
-      },
-      webpush: {
-        fcmOptions: {
-          link: "/"
-        }
       }
     });
 
