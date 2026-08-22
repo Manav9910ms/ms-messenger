@@ -7,6 +7,16 @@
         ".read": "auth != null",
         ".write": "auth != null && auth.uid === $uid"
       }
+    },
+    "typing": {
+      "$receiverUid": {
+        ".read": "auth != null && auth.uid === $receiverUid",
+        "$senderUid": {
+          ".read": "auth != null && auth.uid === $receiverUid",
+          ".write": "auth != null && auth.uid === $senderUid && $senderUid != $receiverUid",
+          ".validate": "newData.val() === true || !newData.exists()"
+        }
+      }
     }
   }
 }
