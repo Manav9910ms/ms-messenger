@@ -26,6 +26,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+import { clearNotificationToken } from "./notifications.js";
 import { showToast } from "./utils.js";
 
 const usernamePage = document.getElementById("usernamePage");
@@ -141,6 +142,7 @@ logoutBtn.addEventListener("click", async () => {
 
   try {
     if (auth.currentUser) {
+      await clearNotificationToken();
       await updatePresence(auth.currentUser, false);
     }
 
