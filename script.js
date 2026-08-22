@@ -18,6 +18,11 @@ import {
 } from "./calls.js";
 
 import { initNotifications } from "./notifications.js";
+import {
+  initTyping,
+  setTyping,
+  stopTyping
+} from "./typing.js";
 import { clearSelectedUser } from "./firebase.js";
 import { showToast } from "./utils.js";
 
@@ -29,6 +34,7 @@ const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
 
 function closeChat() {
+  stopTyping();
   clearSelectedUser();
   stopMessages();
   sidebar?.classList.remove("hide");
@@ -37,7 +43,10 @@ function closeChat() {
   const chatName = document.getElementById("chatUserName");
   const chatStatus = document.getElementById("chatUserStatus");
   if (chatName) chatName.textContent = "Select User";
-  if (chatStatus) chatStatus.textContent = "";
+  if (chatStatus) {
+    chatStatus.textContent = "";
+    chatStatus.classList.remove("typingActive");
+  }
 }
 
 backBtn?.addEventListener("click", closeChat);
@@ -46,8 +55,17 @@ searchInput?.addEventListener("input", () => {
   filterUsers(searchInput.value);
 });
 
+messageInput?.addEventListener("input", () => {
+  void setTyping(Boolean(messageInput.value.trim()));
+});
+
+messageInput?.addEventListener("blur", () => {
+  stopTyping();
+});
+
 messageForm?.addEventListener("submit", (event) => {
   event.preventDefault();
+  stopTyping();
   void sendMessage();
 });
 
@@ -75,10 +93,12 @@ window.addEventListener("ms-profile-ready", async ({ detail }) => {
 });
 
 window.addEventListener("selected-user-changed", () => {
+  stopTyping();
   messageInput?.focus();
 });
 
 initCalls();
+initTyping();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
