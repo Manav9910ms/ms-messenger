@@ -1,4 +1,4 @@
-const CACHE_NAME = "ms-connect-v12";
+const CACHE_NAME = "ms-connect-v13";
 
 const APP_SHELL = [
   "./",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./firebase.js",
   "./firebase-config.js",
   "./utils.js",
+  "./notifications.js",
   "./manifest.json",
   "./favicon.png",
   "./icon-192.png",
