@@ -24,6 +24,14 @@ service cloud.firestore {
         && request.resource.data.uid == userId
         && request.resource.data.username == resource.data.username;
       allow delete: if isUser(userId);
+
+      match /fcmTokens/{tokenId} {
+        allow read: if isUser(userId);
+        allow create, update: if isUser(userId)
+          && request.resource.data.uid == userId
+          && request.resource.data.token == tokenId;
+        allow delete: if isUser(userId);
+      }
     }
 
     match /usernames/{username} {
