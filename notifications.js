@@ -21,6 +21,7 @@ import { showToast } from "./utils.js";
 
 const notificationBtn = document.getElementById("notificationBtn");
 const FCM_SW_PATH = "./firebase-messaging-sw.js";
+const FCM_SW_SCOPE = "./fcm/";
 
 let messaging = null;
 let serviceWorkerRegistration = null;
@@ -38,7 +39,7 @@ async function registerMessagingServiceWorker() {
 
   serviceWorkerRegistration = await navigator.serviceWorker.register(
     FCM_SW_PATH,
-    { scope: "./" }
+    { scope: FCM_SW_SCOPE }
   );
 
   return serviceWorkerRegistration;
@@ -79,13 +80,11 @@ async function saveToken(token) {
   }, { merge: true });
 }
 
-async function removeToken(token) {
-  if (!auth.currentUser || !token) return;
+async function removeToken(token, uid = auth.currentUser?.uid) {
+  if (!uid || !token) return;
 
   try {
-    await deleteDoc(
-      doc(db, "users", auth.currentUser.uid, "fcmTokens", token)
-    );
+    await deleteDoc(doc(db, "users", uid, "fcmTokens", token));
   } catch (error) {
     console.error("Unable to remove notification token:", error);
   }
@@ -174,13 +173,14 @@ export async function enableNotifications() {
 }
 
 export async function clearNotificationToken() {
-  if (!auth.currentUser || !messaging) return;
+  const uid = auth.currentUser?.uid;
+  if (!uid || !messaging) return;
 
   try {
     const token = await getToken(messaging, {
       serviceWorkerRegistration: serviceWorkerRegistration || undefined
     });
-    if (token) await removeToken(token);
+    if (token) await removeToken(token, uid);
   } catch (error) {
     console.error("Notification token cleanup failed:", error);
   }
