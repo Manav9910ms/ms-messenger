@@ -55,11 +55,21 @@ service cloud.firestore {
         && request.resource.data.text is string;
 
       allow update: if signedIn()
-        && resource.data.receiverUid == request.auth.uid
-        && request.resource.data.senderUid == resource.data.senderUid
-        && request.resource.data.receiverUid == resource.data.receiverUid
-        && request.resource.data.text == resource.data.text
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen']);
+        && (
+          (
+            resource.data.receiverUid == request.auth.uid
+            && request.resource.data.senderUid == resource.data.senderUid
+            && request.resource.data.receiverUid == resource.data.receiverUid
+            && request.resource.data.text == resource.data.text
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen'])
+          ) || (
+            resource.data.senderUid == request.auth.uid
+            && request.resource.data.senderUid == resource.data.senderUid
+            && request.resource.data.receiverUid == resource.data.receiverUid
+            && request.resource.data.seen == resource.data.seen
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'editedAt'])
+          )
+        );
 
       allow delete: if signedIn()
         && resource.data.senderUid == request.auth.uid;
