@@ -108,7 +108,14 @@ function openActionMenu(message, anchor) {
 
 function ensureReplyBar() {
   let bar = document.getElementById("replyPreview");
-  if (bar) return bar;
+  if (bar) {
+    const cancel = bar.querySelector(".replyCancel");
+    if (cancel && !cancel.dataset.bound) {
+      cancel.dataset.bound = "true";
+      cancel.addEventListener("click", clearComposerMode);
+    }
+    return bar;
+  }
 
   const form = document.getElementById("messageForm");
   if (!form) return null;
@@ -124,6 +131,7 @@ function ensureReplyBar() {
   const cancel = document.createElement("button");
   cancel.type = "button";
   cancel.className = "replyCancel";
+  cancel.dataset.bound = "true";
   cancel.setAttribute("aria-label", "Cancel reply");
   cancel.textContent = "×";
   cancel.addEventListener("click", clearComposerMode);
@@ -143,6 +151,7 @@ function updateComposerMode() {
 
   if (activeEditId) {
     input.value = renderedMessages.get(activeEditId)?.text || "";
+    input.placeholder = "Edit message...";
     input.focus();
     sendButton.textContent = "Save";
     bar.hidden = true;
