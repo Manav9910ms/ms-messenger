@@ -128,7 +128,6 @@ async function registerPushToken() {
     }
 
     await saveToken(token);
-    showToast("Notifications enabled.", "success");
     return true;
   } catch (error) {
     console.error("Push registration failed:", error);
@@ -153,8 +152,9 @@ export async function initNotifications() {
   if (initialized) return;
   initialized = true;
 
-  notificationBtn?.addEventListener("click", () => {
-    void registerPushToken();
+  notificationBtn?.addEventListener("click", async () => {
+    const enabled = await registerPushToken();
+    if (enabled) showToast("Notifications enabled.", "success");
   });
 
   updateNotificationButton();
@@ -187,8 +187,15 @@ export async function clearNotificationToken() {
 }
 
 window.addEventListener("ms-auth-ready", ({ detail }) => {
-  if (detail?.user) {
-    updateNotificationButton();
-    void initNotifications();
+  if (!detail?.user) {
+    if (notificationBtn) notificationBtn.hidden = true;
+    return;
   }
+
+  updateNotificationButton();
+  void initNotifications().then(() => {
+    if (Notification.permission === "granted") {
+      void registerPushToken();
+    }
+  });
 });
