@@ -20,8 +20,11 @@ import {
 import { showToast } from "./utils.js";
 
 const notificationBtn = document.getElementById("notificationBtn");
+const FCM_SW_PATH = "./service-worker.js";
+const FCM_SW_SCOPE = "./";
 
 let messaging = null;
+let serviceWorkerRegistration = null;
 let initialized = false;
 
 async function getMessagingInstance() {
@@ -31,15 +34,15 @@ async function getMessagingInstance() {
   return messaging;
 }
 
-async function getAppServiceWorker() {
+async function registerMessagingServiceWorker() {
   if (!("serviceWorker" in navigator)) return null;
 
-  try {
-    return await navigator.serviceWorker.ready;
-  } catch (error) {
-    console.error("Service worker is not ready:", error);
-    return null;
-  }
+  serviceWorkerRegistration = await navigator.serviceWorker.register(
+    FCM_SW_PATH,
+    { scope: FCM_SW_SCOPE }
+  );
+
+  return serviceWorkerRegistration;
 }
 
 function updateNotificationButton() {
@@ -112,11 +115,8 @@ async function registerPushToken() {
   }
 
   try {
-    const registration = await getAppServiceWorker();
-    if (!registration) {
-      showToast("Notification service is not ready. Please refresh.", "error");
-      return false;
-    }
+    const registration =
+      serviceWorkerRegistration || await registerMessagingServiceWorker();
 
     const token = await getToken(supportedMessaging, {
       serviceWorkerRegistration: registration
@@ -162,6 +162,7 @@ export async function initNotifications() {
   const supportedMessaging = await getMessagingInstance();
   if (!supportedMessaging) return;
 
+  await registerMessagingServiceWorker();
   onMessage(supportedMessaging, (payload) => {
     void handleForegroundMessage(payload);
   });
@@ -176,9 +177,8 @@ export async function clearNotificationToken() {
   if (!uid || !messaging) return;
 
   try {
-    const registration = await getAppServiceWorker();
     const token = await getToken(messaging, {
-      serviceWorkerRegistration: registration || undefined
+      serviceWorkerRegistration: serviceWorkerRegistration || undefined
     });
     if (token) await removeToken(token, uid);
   } catch (error) {
@@ -194,7 +194,7 @@ window.addEventListener("ms-auth-ready", ({ detail }) => {
 
   updateNotificationButton();
   void initNotifications().then(() => {
-    if ("Notification" in window && Notification.permission === "granted") {
+    if (Notification.permission === "granted") {
       void registerPushToken();
     }
   });
