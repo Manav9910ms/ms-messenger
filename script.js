@@ -17,6 +17,7 @@ import {
   cleanupStaleCalls
 } from "./calls.js";
 
+import { initNotifications } from "./notifications.js";
 import { clearSelectedUser } from "./firebase.js";
 import { showToast } from "./utils.js";
 
@@ -62,6 +63,7 @@ window.addEventListener("ms-auth-ready", async ({ detail }) => {
   await loadUsers();
   loadUnreadCounts();
   void cleanupStaleCalls();
+  void initNotifications();
 });
 
 window.addEventListener("ms-profile-ready", async ({ detail }) => {
@@ -69,6 +71,7 @@ window.addEventListener("ms-profile-ready", async ({ detail }) => {
 
   await loadUsers();
   loadUnreadCounts();
+  void initNotifications();
 });
 
 window.addEventListener("selected-user-changed", () => {
