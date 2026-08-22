@@ -1,7 +1,7 @@
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js");
 
-const CACHE_NAME = "ms-connect-v14";
+const CACHE_NAME = "ms-connect-v15";
 
 firebase.initializeApp({
   apiKey: "AIzaSyB92P1v8_9hPLhgqN5YmUzUXF_IIuD7Al0",
@@ -55,6 +55,7 @@ const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
+  "./message-actions.css",
   "./script.js",
   "./auth.js",
   "./users.js",
