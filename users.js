@@ -25,6 +25,12 @@ function cleanupStatusListeners() {
   statusUnsubscribers = [];
 }
 
+function clearSelectedVisualState() {
+  document.querySelectorAll(".user.selected").forEach((element) => {
+    element.classList.remove("selected");
+  });
+}
+
 function createUserElement(data) {
   const div = document.createElement("div");
   div.className = "user";
@@ -62,6 +68,8 @@ function createUserElement(data) {
   statusUnsubscribers.push(applyStatus(data.uid, status));
 
   const selectUser = () => {
+    clearSelectedVisualState();
+    div.classList.add("selected");
     setSelectedUser(data);
 
     const chatName = document.getElementById("chatUserName");
@@ -145,6 +153,7 @@ export function filterUsers(value) {
 export function clearUserState() {
   cleanupStatusListeners();
   cachedUsers = [];
+  clearSelectedVisualState();
   clearSelectedUser();
   stopMessages();
 }
