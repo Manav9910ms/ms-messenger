@@ -1,0 +1,116 @@
+.message {
+  cursor: pointer;
+}
+
+.message:focus-visible {
+  outline: 2px solid rgba(79, 215, 255, .7);
+  outline-offset: 2px;
+}
+
+.messageReplyQuote {
+  margin-bottom: 8px;
+  padding: 7px 9px;
+  border-left: 3px solid rgba(79, 215, 255, .72);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, .12);
+}
+
+.messageReplyLabel {
+  margin-bottom: 2px;
+  color: rgba(255,255,255,.84);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.messageReplyText {
+  overflow: hidden;
+  color: rgba(255,255,255,.68);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editedLabel {
+  color: rgba(255,255,255,.58);
+  font-size: 9px;
+  font-style: italic;
+}
+
+.messageActionMenu {
+  position: fixed;
+  z-index: 11000;
+  width: 150px;
+  padding: 5px;
+  border: 1px solid rgba(143,164,204,.2);
+  border-radius: 14px;
+  background: rgba(13,18,31,.96);
+  box-shadow: 0 18px 44px rgba(0,0,0,.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.messageActionMenu button {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  box-shadow: none;
+  color: #eef4ff;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.messageActionMenu button:hover {
+  transform: none;
+  background: rgba(255,255,255,.07);
+  box-shadow: none;
+  filter: none;
+}
+
+.messageActionMenu .actionDanger {
+  color: #ff7b83;
+}
+
+.replyPreview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-top: 1px solid rgba(143,164,204,.12);
+  background: rgba(10,15,26,.82);
+}
+
+.replyPreviewText {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  padding-left: 9px;
+  border-left: 3px solid rgba(79,215,255,.7);
+  color: #9aa8be;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.replyCancel {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 9px;
+  background: rgba(255,255,255,.05);
+  box-shadow: none;
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .messageActionMenu {
+    width: 156px;
+  }
+}
